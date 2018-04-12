@@ -1,17 +1,10 @@
 'use strict';
 
-// This Volumio plugin provides Korean TV
-
 var libQ = require('kew');
 var fs = require('fs-extra');
 var config = require('v-conf');
 var i2c  = require('i2c-bus');
 var _ = require('lodash/core');
-
-var DS1621_ADDR = 0x48,
-    CMD_ACCESS_CONFIG = 0xac,
-    CMD_READ_TEMP = 0xaa,
-    CMD_START_CONVERT = 0xee;
 
 module.exports = ControllerES9018K2M;
 
@@ -22,10 +15,7 @@ function ControllerES9018K2M(context) {
   self.commandRouter = this.context.coreCommand;
   self.logger = this.context.logger;
   self.configManager = this.context.configManager;
-  self.state = {};
-  self.stateMachine = self.commandRouter.stateMachine;
-  self.player = null;
-  self.videoSource = null;
+  self.stateMachine = this.commandRouter.stateMachine;
   self.logger.info("ControllerES9018K2M::constructor");
 }
 
@@ -33,7 +23,10 @@ ControllerES9018K2M.prototype.onVolumioStart = function()
 {
   var self = this;
 
-  this.configFile=this.commandRouter.pluginManager.getConfigurationFile(this.context,'config.json');
+  this.configFile = this
+      .commandRouter
+      .pluginManager
+      .getConfigurationFile(this.context,'config.json');
   self.getConf(this.configFile);
 
   return libQ.resolve();
@@ -46,11 +39,10 @@ ControllerES9018K2M.prototype.getConfigurationFiles = function () {
 ControllerES9018K2M.prototype.onStart = function() {
   var self = this;
   
-  self.loadRadioI18nStrings();
-  self.addTVResource();
-  self.audioOutput = self.config.get("output_device");
-
-  self.logger.info("ES9018K2M:audioOutput:"+self.audioOutput);
+  self.loadI18nStrings();
+  //self.addResource();
+  self.initES9018k2m();
+  self.volumeLevel = self.config.get("volume_level");
 
   return libQ.resolve();
 };
@@ -103,10 +95,7 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
       __dirname + '/UIConfig.json')
   .then(function(uiconf)
   {
-    uiconf.sections[0].content[0].value.label = self.audioOutput.toUpperCase();
-    uiconf.sections[0].content[0].value.value = self.audioOutput;
-
-    self.configManager.setUIConfigParam(uiconf, 'sections[0].content[6].description', JSON.stringify(self.videoDesc));
+    uiconf.sections[0].content[0].value = self.volumeLevel;
 
     defer.resolve(uiconf);
   })
@@ -118,30 +107,23 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
   return defer.promise;
 };
 
-ControllerES9018K2M.prototype.updateConfig = function(data) {
+ControllerES9018K2M.prototype.updateVolume = function(data) {
   var self = this;
 
-  self.logger.info("ControllerES9018K2M::updateConfig:"+data['output_device']);
-
-  self.config.set('output_device',  data['output_device'].value);
-  self.config.set('source', data['source'].value);
-
-  self.audioOutput = data['output_device'].value;
-  self.videoSource = data['source'].value;
-  self.youtubeUrl = data['youtube_url'];
-
-  self.runOmxPlay([self.videoSource]);
+  self.logger.info("ControllerES9018K2M::updateVolume:"+data['volume_id']);
+  self.config.set('volumeLevel', data['volume_id']);
+  self.volumeLevel = data['volume_id'];
+  self.setSabreVolume(self.volumeLevel);
 };
 
-ControllerES9018K2M.prototype.addTVResource = function() {
+ControllerES9018K2M.prototype.addResource = function() {
   var self=this;
 
-  self.tvEnabled = false;
-  var tvResource = fs.readJsonSync(__dirname+'/tv_stations.json');
+  var resource = fs.readJsonSync(__dirname+'/tv_stations.json');
 
 };
 
-ControllerES9018K2M.prototype.loadRadioI18nStrings = function () {
+ControllerES9018K2M.prototype.loadI18nStrings = function () {
   var self=this;
   var language_code = this.commandRouter.sharedVars.get('language_code');
 
@@ -149,7 +131,7 @@ ControllerES9018K2M.prototype.loadRadioI18nStrings = function () {
   self.i18nStringsDefaults=fs.readJsonSync(__dirname+'/i18n/strings_en.json');
 };
 
-ControllerES9018K2M.prototype.getRadioI18nString = function (key) {
+ControllerES9018K2M.prototype.getI18nString = function (key) {
   var self=this;
 
   if (self.i18nStrings[key] !== undefined)
@@ -158,10 +140,41 @@ ControllerES9018K2M.prototype.getRadioI18nString = function (key) {
     return self.i18nStringsDefaults[key];
 };
 
-ControllerES9018K2M.prototype.errorToast = function (station, msg) {
-  var errorMessage = self.getRadioI18nString(msg);
-  errorMessage.replace('{0}', station.toUpperCase());
-  self.commandRouter.pushToastMessage('error',
-      self.getRadioI18nString('PLUGIN_NAME'), errorMessage);
+ControllerES9018K2M.prototype.initES9018k2m = function()
+{
+  var self = this;
+
+  self.SABRE_ADDR = 0x48;
+  self.lBal = 0;
+  self.rBal = 0;
+  self.volumeLevel = 0;
 };
 
+///////////
+// CONTROLLING THE DIGITAL ATTENUATION (VOLUME)
+ControllerES9018K2M.prototype.writeSabreLeftReg = function (regAddr, regVal) {
+  var self=this;
+
+  var i2c1 = i2c.openSync(1);
+  i2c1.i2cWriteSync(self.SABRE_ADDR, regAddr, regVal);
+  i2c1.closeSync();
+};
+
+
+// The following routine writes to both chips in dual mono mode. With some exceptions, one only needs
+// to set one of the chips to be the right channel after all registers are modified.
+ControllerES9018K2M.prototype.writeSabreReg = function(regAddr, regVal) {
+  var self=this;
+
+  // By default the chip with addres 0x48 is the left channel
+  self.writeSabreLeftReg(regAddr, regVal);
+};
+
+ControllerES9018K2M.prototype.setSabreVolume = function(regVal) {
+  var self=this;
+
+  self.logger.info("ControllerES9018K2M::setSabreVolume:"+regVal);
+  // lBal and rBal are for adjusting for Balance for left and right channels
+  self.writeSabreLeftReg(15, regVal+self.lBal); // set up volume in Channel 1 (Left)
+  self.writeSabreLeftReg(16, regVal+self.rBal); // set up volume in Channel 2 (Right)
+}

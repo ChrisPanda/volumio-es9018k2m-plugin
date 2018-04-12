@@ -1,3 +1,8 @@
 {
-  "PLUGIN_NAME": "ES9018K2M 플러그인"
+  "PLUGIN_NAME": "ES9018K2M 플러그인",
+  "ES9018K2M": {
+    "CONFIG": "설정",
+    "VOLUME": "볼륨",
+    "VOLUME_SAVE": "볼륨 저장"
+  }
 }

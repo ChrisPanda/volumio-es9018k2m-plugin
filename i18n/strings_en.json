@@ -1,3 +1,8 @@
 {
-  "PLUGIN_NAME": "ES9018K2M Plugin"
+  "PLUGIN_NAME": "ES9018K2M Plugin",
+  "ES9018K2M": {
+    "CONFIG": "configuration",
+    "VOLUME": "Volume",
+    "VOLUME_SAVE": "Volume Save"
+  }
 }

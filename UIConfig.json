@@ -1,112 +1,32 @@
 {
   "page": {
-    "label": "TRANSLATE.VIDEO.CONFIG"
+    "label": "TRANSLATE.ES9018K2M.CONFIG"
   },
   "sections": [
     {
-      "id": "config",
+      "id": "volume",
       "element": "section",
-      "label": "TRANSLATE.VIDEO.TV_TITLE",
+      "label": "TRANSLATE.ES9018K2M.VOLUME",
       "icon": "fa-cogs",
       "onSave": {
         "type": "controller",
-        "endpoint":"miscellanea/korean_tv",
-        "method":"updateConfig"
+        "endpoint":"miscellanea/es9018k2m_ctl",
+        "method":"updateVolume"
       },
       "saveButton": {
-        "label": "TRANSLATE.VIDEO.VIDEO_ON",
+        "label": "TRANSLATE.ES9018K2M.VOLUME_SAVE",
         "data": [
-          "youtube_url",
-          "output_device",
-          "source"
+          "volume_id"
         ]
       },
       "content": [
         {
-          "id": "output_device",
-          "element": "select",
-          "label": "TRANSLATE.VIDEO.AUDIO_OUTPUT",
-          "description": "Audio Output: ALSA, HDMI",
-          "value": {
-            "label": "ALSA",
-            "value": "alsa"
-          },
-          "options": [
-            {
-              "label": "ALSA",
-              "value": "alsa"
-            },
-            {
-              "label": "HDMI",
-              "value": "hdmi"
-            }
-          ]
-        },
-        {
-          "id": "source",
-          "element": "select",
-          "label": "TRANSLATE.VIDEO.VIDEO_SELECT",
-          "description": "Korean SBS, MBC, KBS1, KBS2 TV, YouTube",
-          "value": {
-            "label": "TRANSLATE.VIDEO.NO_SELECT_TV",
-            "value": "none"
-          },
-          "options": [
-            {
-              "label": "TRANSLATE.VIDEO.NO_SELECT_TV",
-              "value": "none"
-            },
-            {
-              "label": "SBS",
-              "value": "sbs"
-            },
-            {
-              "label": "TRANSLATE.VIDEO.KBS1_TV_HIGH_QUALITY",
-              "value": "k_1tv"
-            },
-            {
-              "label": "TRANSLATE.VIDEO.KBS2_TV_HIGH_QUALITY",
-              "value": "k_2tv"
-            },
-            {
-              "label": "MBC",
-              "value": "mbc"
-            },
-            {
-              "label":  "TRANSLATE.VIDEO.KBS1_TV_LOW_QUALITY",
-              "value": "kbs1"
-            },
-            {
-              "label": "TRANSLATE.VIDEO.KBS2_TV_LOW_QUALITY",
-              "value": "kbs2"
-            },
-            {
-              "label": "TRANSLATE.VIDEO.YOUTUBE",
-              "value": "youtube"
-            }
-          ]
-        },
-        {
-          "id": "youtube_url",
+          "id": "volume_id",
           "type": "text",
           "element": "input",
-          "label": "YouTube URL",
+          "label": "Volume",
           "description": "",
           "value": ""
-        },
-        {
-          "id": "video_off",
-          "element": "button",
-          "label": "TRANSLATE.VIDEO.VIDEO_OFF",
-          "onClick": {
-            "type": "emit",
-            "message": "callMethod",
-            "data": {
-              "endpoint": "miscellanea/korean_tv",
-              "method": "stopOmxPlay",
-              "data": ""
-            }
-          }
         }
       ]
     }

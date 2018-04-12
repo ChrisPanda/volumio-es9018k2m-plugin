@@ -1,0 +1,36 @@
+{
+  "name": "es9018k2m",
+  "version": "0.0.1",
+  "description": "ES9018K2M i2c Controll Plugin for Volumio2",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pack": "rm -R node_modules || npm install --production && zip -r -X build.zip ./ || npm install"
+  },
+  "author": "Chris Song",
+  "license": "ISC",
+  "volumio_info": {
+    "prettyName": "ES9018K2M Control",
+    "icon": "fa-cogs",
+    "plugin_type": "miscellanea"
+  },
+  "dependencies": {
+    "fs-extra": "^0.30.0",
+    "kew": "^0.7.0",
+    "v-conf": "^1.4.0",
+    "i2c-bus": "^3.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ChrisPanda/volumio-es9018k2m-plugin.git"
+  },
+  "keywords": [
+    "es9018k2m",
+    "i2s DAC",
+    "volumio"
+  ],
+  "bugs": {
+    "url": "https://github.com/ChrisPanda/volumio-es9018k2m-plugin/issues"
+  },
+  "homepage": "https://github.com/ChrisPanda/volumio-es9018k2m-plugin#readme"
+}

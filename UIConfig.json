@@ -4,7 +4,7 @@
   },
   "sections": [
     {
-      "id": "volume",
+      "id": "volume_control",
       "element": "section",
       "label": "TRANSLATE.ES9018K2M.VOLUME",
       "icon": "fa-cogs",
@@ -16,17 +16,17 @@
       "saveButton": {
         "label": "TRANSLATE.ES9018K2M.VOLUME_SAVE",
         "data": [
-          "volume_id"
+          "volume_adjust"
         ]
       },
       "content": [
         {
-          "id": "volume_id",
-          "type": "text",
+          "id": "volume_adjust",
+          "type": "number",
           "element": "input",
           "label": "Volume",
           "description": "",
-          "value": ""
+          "value": 0
         }
       ]
     }

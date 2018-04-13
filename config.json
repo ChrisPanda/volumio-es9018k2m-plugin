@@ -3,8 +3,8 @@
     "type": "boolean",
     "value": false
   },
-  "output_device": {
-    "type": "string",
-    "value": "alsa"
+  "volume_level": {
+    "type": "number",
+    "value": 3
   }
 }

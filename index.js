@@ -93,7 +93,7 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
       __dirname + '/UIConfig.json')
   .then(function(uiconf)
   {
-    uiconf.sections[0].content[0].value = self.volumeLevel;
+    uiconf.sections[1].content[0].value = self.volumeLevel;
 
     defer.resolve(uiconf);
   })
@@ -109,7 +109,7 @@ ControllerES9018K2M.prototype.updateVolume = function(data) {
   var self = this;
 
   self.logger.info("ControllerES9018K2M::updateVolume:"+data['volume_adjust']);
-  self.config.set('volumeLevel', data['volume_adjust']);
+  self.config.set('volume_level', data['volume_adjust']);
   self.volumeLevel = data['volume_adjust'];
   self.setSabreVolume(self.volumeLevel);
 };

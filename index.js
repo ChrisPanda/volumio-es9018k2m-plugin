@@ -169,6 +169,7 @@ ControllerES9018K2M.prototype.initES9018k2m = function()
 ControllerES9018K2M.prototype.checkES9018k2m = function() {
   var self=this;
 
+  self.logger.info("ControllerES9018K2M::checkES9018k2m");
   var chipStatus = self.readRegister(self.statusReg);
   if ((chipStatus & 0x1C) === 16) {
     self.es9018k2m = true;
@@ -417,11 +418,17 @@ ControllerES9018K2M.prototype.setSRFormat = function () {
   }
 };
 
-ControllerES9018K2M.prototype.setFirFilter = function(value){
+ControllerES9018K2M.prototype.setFirFilter = function(data){
   var self=this;
   var result = "Fir: ";
 
-  switch(value) {
+  var selected = data['fir_filter'].value;
+  self.logger.info("ControllerES9018K2M::setFirFilter:"+JSON.stringify(selected));
+
+  switch(selected.value) {
+    case -1:
+      result += "NONE";
+      break;
     case 0:                       // Slow FIR
       self.bitset(self.reg7,5);             // x 0 1 x x x x x
       self.bitclear(self.reg7,6);           // x 0 1 x x x x x
@@ -452,20 +459,25 @@ ControllerES9018K2M.prototype.setFirFilter = function(value){
       result += "Bypass oversampling";
       break;
   }
+
+  self.logger.info("ControllerES9018K2M::setFirFilter:RESULT:"+result);
 };
 
-ControllerES9018K2M.prototype.setIirFilter = function(value){
+ControllerES9018K2M.prototype.setIirFilter = function(data){
   var self=this;
   var result;
 
-  switch(value) {
+  var selected = data['iir_filter'].value;
+  self.logger.info("ControllerES9018K2M::setIirFilter:"+JSON.stringify(selected));
+
+  switch(selected.value) {
     case 0:                        // IIR Bandwidth: Normal 47K (for PCM)
-      self.bitclear(self.reg7,2);            // x x x x 0 0 x x
+      self.bitclear(self.reg7,2);           // x x x x 0 0 x x
       self.bitclear(self.reg7,3);
-      self.bitclear(self.reg21,2);           // Use IIR: x x x x x 0 x x
+      self.bitclear(self.reg21,2);          // Use IIR: x x x x x 0 x x
       self.writeSabreReg(0x0E, self.reg7);
       self.writeSabreReg(0x15, self.reg21);
-      result = "PCM";
+      result = "47K PCM";
       break;
     case 1:                        // IIR Bandwidth: 50k (for DSD) (D)
       self.bitset(self.reg7,2);              // x x x x 0 1 x x
@@ -473,7 +485,7 @@ ControllerES9018K2M.prototype.setIirFilter = function(value){
       self.bitclear(self.reg21,2);           // Use IIR: x x x x x 0 x x
       self.writeSabreReg(0x0E, self.reg7);
       self.writeSabreReg(0x15, self.reg21);
-      result = "50K";
+      result = "50K DSD";
       break;
     case 2:                        // IIR Bandwidth: 60k (for DSD)
       self.bitset(self.reg7,3);              // x x x x 1 0 x x
@@ -481,7 +493,7 @@ ControllerES9018K2M.prototype.setIirFilter = function(value){
       self.bitclear(self.reg21,2);           // Use IIR: x x x x x 0 x x
       self.writeSabreReg(0x0E, self.reg7);
       self.writeSabreReg(0x15, self.reg21);
-      result = "60K";
+      result = "60K DSD";
       break;
     case 3:                        // IIR Bandwidth: 70k (for DSD)
       self.bitset(self.reg7,2);              // x x x x 1 1 x x
@@ -489,7 +501,7 @@ ControllerES9018K2M.prototype.setIirFilter = function(value){
       self.bitclear(self.reg21,2);           // Use IIR: x x x x x 0 x x
       self.writeSabreReg(0x0E, self.reg7);
       self.writeSabreReg(0x15, self.reg21);
-      result = "70K";
+      result = "70K DSD";
       break;
     case 4:                        // IIR OFF
       self.bitset(self.reg21,2);             // Bypass IIR: x x x x x 1 x x
@@ -498,27 +510,27 @@ ControllerES9018K2M.prototype.setIirFilter = function(value){
       break;
   }
 
-  return result;
+  self.logger.info("ControllerES9018K2M::setIirFilter:RESULT:"+result);
 };
 
+// lBal and rBal are for adjusting for Balance for left and right channels
 ControllerES9018K2M.prototype.setSabreVolume = function(regVal) {
   var self=this;
 
   self.logger.info("ControllerES9018K2M::setSabreVolume:"+regVal);
-  // lBal and rBal are for adjusting for Balance for left and right channels
   self.writeSabreLeftReg(15, regVal+self.lBal); // set up volume in Channel 1 (Left)
   self.writeSabreLeftReg(16, regVal+self.rBal); // set up volume in Channel 2 (Right)
 };
 
 ControllerES9018K2M.prototype.muteES9018K2m  = function(){
-  self.bitset(self.reg7,0);               // Mute Channel 1
-  self.bitset(self.reg7,1);               // Mute Channel 2
+  self.bitset(self.reg7, 0);               // Mute Channel 1
+  self.bitset(self.reg7, 1);               // Mute Channel 2
   self.writeSabreReg(0x07, self.reg7);
 };
 
 ControllerES9018K2M.prototype.unmuteES9018K2m  = function(){
-  self.bitclear(self.reg7,0);             // Unmute Channel 1
-  self.bitclear(self.reg7,1);             // Unmute Channel 2
+  self.bitclear(self.reg7, 0);             // Unmute Channel 1
+  self.bitclear(self.reg7, 1);             // Unmute Channel 2
   self.writeSabreReg(0x07, self.reg7);
 };
 
@@ -550,7 +562,7 @@ ControllerES9018K2M.prototype.setDeemphasis = function(value){ // register 6
       break;
     case 5:                        // MANUAL RESERVED: 0 0 1 1 1 0 1 0 = 0x3A (for fun)
       self.writeSabreReg(0x06,0x3A);
-      result += "RES";
+      result += "Reserved";
       break;
   }
 
@@ -558,12 +570,14 @@ ControllerES9018K2M.prototype.setDeemphasis = function(value){ // register 6
 };
 
 /*
-  Adjusting Balance. The balance can be adjusted up to 9.5 dB to the right channel or to the left
-  channel. The limit of 9.5 dB is just so that the value fits in the display. In theory you can
-  completely turn-off one or the other channel. The way it works is to increase the attenuation of
-  one channel or the other channel. If the Balance is to the right channel (turning the knob
-  clockwise), then the display will indicate how many dBs is the left channel attenuated - or how
-  much louder is the right channel compared with the left channel
+  Adjusting Balance. The balance can be adjusted up to 9.5 dB to the right
+  channel or to the left channel. The limit of 9.5 dB is just so that the value
+  fits in the display. In theory you can completely turn-off one or the other
+  channel. The way it works is to increase the attenuation of one channel or
+  the other channel. If the Balance is to the right channel (turning the knob
+  clockwise), then the display will indicate how many dBs is the left channel
+  attenuated - or how much louder is the right channel compared with the
+  left channel
 */
 ControllerES9018K2M.prototype.setBalance = function(value){
   var self=this;

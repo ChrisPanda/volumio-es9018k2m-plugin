@@ -4,6 +4,20 @@
   },
   "sections": [
     {
+      "id": "check_device",
+      "element": "button",
+      "label": "TRANSLATE.ES9018K2M.CHECK_DEVICE",
+      "onClick": {
+        "type": "emit",
+        "message": "callMethod",
+        "data": {
+          "endpoint": "miscellanea/es9018k2m_ctl",
+          "method": "checkES9018k2m",
+          "data": ""
+        }
+      }
+    },
+    {
       "id": "volume_control",
       "element": "section",
       "label": "TRANSLATE.ES9018K2M.VOLUME",
@@ -27,6 +41,151 @@
           "label": "Volume",
           "description": "",
           "value": 0
+        }
+      ]
+    },
+    {
+      "id": "volume_control_equ",
+      "element": "section",
+      "label": "TRANSLATE.ES9018K2M.VOLUME",
+      "icon": "fa-cogs",
+      "onSave": {
+        "type": "controller",
+        "endpoint":"miscellanea/es9018k2m_ctl",
+        "method":"updateVolume"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.ES9018K2M.VOLUME_SAVE",
+        "data": [
+          "volume_adjust"
+        ]
+      },
+      "content": [
+        {
+          "id": "volume_adjust",
+          "element": "equalizer",
+          "label": "Volume",
+          "description": "",
+          "config": {
+            "orientation": "horizontal",
+            "bars": [
+              {
+                "min": "0",
+                "max": "255",
+                "step": "2",
+                "value": "100",
+                "tooltip":"always"
+              }
+            ]
+          }
+        }
+      ]
+    },
+
+
+
+
+    {
+      "id": "fir_filter_ctl",
+      "element": "section",
+      "label": "TRANSLATE.ES9018K2M.FIR_FILTER",
+      "icon": "fa-cogs",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "miscellanea/es9018k2m_ctl",
+        "method": "setFirFilter"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.ES9018K2M.APPLY_FILTER",
+        "data": [
+          "fir_filter"
+        ]
+      },
+      "content": [
+        {
+          "id": "fir_filter",
+          "type": "number",
+          "element": "select",
+          "label": "TRANSLATE.ES9018K2M.FIR_FILTER_SELECT",
+          "description": "",
+          "value": {
+            "value": 1,
+            "label": "Fast FIR (default)"
+          },
+          "options": [
+            {
+              "value": -1,
+              "label": "NONE"
+            },
+            {
+              "value": 0,
+              "label": "Slow FIR"
+            },
+            {
+              "value": 1,
+              "label": "Fast FIR (default)"
+            },
+            {
+              "value": 2,
+              "label": "Minimum phase"
+            },
+            {
+              "value": 3,
+              "label": "Bypass oversampling"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "iir_filter_ctl",
+      "element": "section",
+      "label": "TRANSLATE.ES9018K2M.IIR_FILTER",
+      "icon": "fa-cogs",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "miscellanea/es9018k2m_ctl",
+        "method": "setIirFilter"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.ES9018K2M.APPLY_FILTER",
+        "data": [
+          "iir_filter"
+        ]
+      },
+      "content": [
+        {
+          "id": "iir_filter",
+          "type": "number",
+          "element": "select",
+          "label": "TRANSLATE.ES9018K2M.IIR_FILTER_SELECT",
+          "description": "",
+          "value": {
+            "value": 4,
+            "label": "OFF"
+          },
+          "options": [
+            {
+              "value": 0,
+              "label": "47K PCM"
+            },
+            {
+              "value": 1,
+              "label": "50K DSD"
+            },
+            {
+              "value": 2,
+              "label": "60K DSD"
+            },
+            {
+              "value": 3,
+              "label": "70K DSD"
+            },
+            {
+              "value": 4,
+              "label": "OFF"
+            }
+          ]
         }
       ]
     }

@@ -3,6 +3,12 @@
   "ES9018K2M": {
     "CONFIG": "설정",
     "VOLUME": "볼륨",
-    "VOLUME_SAVE": "볼륨 저장"
+    "VOLUME_SAVE": "볼륨 저장",
+    "CHECK_DEVICE": "디바이스 검사",
+    "FIR_FILTER": "FIR 디지털 필터",
+    "IIR_FILTER": "IIR 디지털 필터",
+    "APPLY_FILTER": "필터 적용",
+    "FIR_FILTER_SELECT": "FIR 필터 선택",
+    "IIR_FILTER_SELECT": "IIR 필터 선택"
   }
 }

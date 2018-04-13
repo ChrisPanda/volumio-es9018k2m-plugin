@@ -3,6 +3,12 @@
   "ES9018K2M": {
     "CONFIG": "configuration",
     "VOLUME": "Volume",
-    "VOLUME_SAVE": "Volume Save"
+    "VOLUME_SAVE": "Volume Save",
+    "CHECK_DEVICE": "Check Device",
+    "FIR_FILTER": "FIR Digital Filter",
+    "IIR_FILTER": "IIR Digital Filter",
+    "APPLY_FILTER": "Apply Filter",
+    "FIR_FILTER_SELECT": "select FIR Filter",
+    "IIR_FILTER_SELECT": "select IIR Filter"
   }
 }

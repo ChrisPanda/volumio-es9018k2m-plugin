@@ -8,6 +8,7 @@
       "element": "section",
       "label": "TRANSLATE.ES9018K2M.VOLUME",
       "icon": "fa-cogs",
+      "description": "",
       "onSave": {
         "type": "controller",
         "endpoint":"miscellanea/es9018k2m_ctl",
@@ -111,10 +112,6 @@
             "label": "Fast FIR (default)"
           },
           "options": [
-            {
-              "value": -1,
-              "label": "NONE"
-            },
             {
               "value": 0,
               "label": "Slow FIR"

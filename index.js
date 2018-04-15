@@ -89,11 +89,17 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
   self.getConf(this.configFile);
   self.logger.info("ES9018K2M:getUIConfig");
 
+  self.checkES9018k2m();
+
   self.commandRouter.i18nJson(__dirname+'/i18n/strings_' + lang_code + '.json',
       __dirname + '/i18n/strings_en.json',
       __dirname + '/UIConfig.json')
   .then(function(uiconf)
   {
+    if (self.es9018k2m)
+      uiconf.sections[0].description = self.getI18nString('I2S_ENABLED');
+    else
+      uiconf.sections[0].description = self.getI18nString('I2S_DISABLED');
     uiconf.sections[0].content[0].value = self.volumeLevel;
 
     defer.resolve(uiconf);
@@ -438,9 +444,6 @@ ControllerES9018K2M.prototype.setFirFilter = function(data){
   self.logger.info("ControllerES9018K2M::REG7:"+self.reg7);
   self.logger.info("ControllerES9018K2M::REG21:"+self.reg21);
   switch (selected) {
-    case -1:
-      result += "NONE";
-      break;
     case 0:                       // Slow FIR
       self.reg7=self.bitset(self.reg7,5);             // x 0 1 x x x x x
       self.reg7=self.bitclear(self.reg7,6);           // x 0 1 x x x x x
@@ -484,7 +487,7 @@ ControllerES9018K2M.prototype.setIirFilter = function(data){
   var selected = data['iir_filter'].value;
   self.logger.info("ControllerES9018K2M::setIirFilter:"+JSON.stringify(selected));
 
-  switch(selected.value) {
+  switch(selected) {
     case 0:                        // IIR Bandwidth: Normal 47K (for PCM)
       self.reg7=self.bitclear(self.reg7,2);           // x x x x 0 0 x x
       self.reg7=self.bitclear(self.reg7,3);

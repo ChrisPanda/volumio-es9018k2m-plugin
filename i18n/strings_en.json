@@ -1,5 +1,7 @@
 {
   "PLUGIN_NAME": "ES9018K2M Plugin",
+  "I2S_ENABLED": "ES9018K2M i2s DAC is enabled.",
+  "I2S_DISABLED": "Current i2s DAC is not ES9018K2M. The plugin can't control status.",
   "ES9018K2M": {
     "CONFIG": "configuration",
     "VOLUME": "Volume",

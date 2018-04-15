@@ -1,5 +1,7 @@
 {
   "PLUGIN_NAME": "ES9018K2M 플러그인",
+  "I2S_ENABLED": "ES9018K2M i2s DAC 활성화됨",
+  "I2S_DISABLED": "현재 i2s DAC는 es9018k2m 이 아닙니다. 플러그인 상태 제어를 할수 없습니다.",
   "ES9018K2M": {
     "CONFIG": "설정",
     "VOLUME": "볼륨",

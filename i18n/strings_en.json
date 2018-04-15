@@ -13,6 +13,7 @@
     "APPLY_FILTER": "Apply Filter",
     "FIR_FILTER_SELECT": "select FIR Filter",
     "IIR_FILTER_SELECT": "select IIR Filter",
-    "DE_EMPHASIS_FILTER_SELECT": "select Deemphasis Filter"
+    "DE_EMPHASIS_FILTER_SELECT": "select Deemphasis Filter",
+    "MUTE_ON_OFF": "mute ON/OFF"
   }
 }

@@ -551,6 +551,19 @@ ControllerES9018K2M.prototype.unmuteES9018K2m  = function(){
   self.writeSabreReg(0x07, self.reg7);
 };
 
+ControllerES9018K2M.prototype.setMuteOnOff = function(data) {
+  var self = this;
+  var result;
+
+  var selected = data['deemphasis_filter'].value;
+  self.logger.info("ControllerES9018K2M::setMuteOnOff:"+selected);
+
+  if (selected)
+    muteES9018K2m();
+  else
+    unmuteES9018K2m();
+};
+
 ControllerES9018K2M.prototype.setDeemphasisFilter = function(data) {
   var self=this;
   var result;

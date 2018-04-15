@@ -13,6 +13,7 @@
     "APPLY_FILTER": "필터 적용",
     "FIR_FILTER_SELECT": "FIR 필터 선택",
     "IIR_FILTER_SELECT": "IIR 필터 선택",
-    "DE_EMPHASIS_FILTER_SELECT": "Deemphasis 필터 선택"
+    "DE_EMPHASIS_FILTER_SELECT": "Deemphasis 필터 선택",
+    "MUTE_ON_OFF": "음소거 ON/OFF"
   }
 }

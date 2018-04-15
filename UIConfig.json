@@ -42,6 +42,21 @@
               "data": ""
             }
           }
+        },
+        {
+          "id": "mute",
+          "element": "switch",
+          "label": "TRANSLATE.ES9018K2M.MUTE_ON_OFF",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "miscellanea/es9018k2m_ctl",
+              "method": "setMuteOnOff",
+              "data": ["mute"]
+            }
+          },
+          "value": true
         }
       ]
     },

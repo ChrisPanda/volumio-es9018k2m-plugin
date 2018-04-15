@@ -9,8 +9,10 @@
     "CHECK_DEVICE": "Check Device",
     "FIR_FILTER": "FIR Digital Filter",
     "IIR_FILTER": "IIR Digital Filter",
+    "DE_EMPHASIS_FILTER": "Deemphasis Filter",
     "APPLY_FILTER": "Apply Filter",
     "FIR_FILTER_SELECT": "select FIR Filter",
-    "IIR_FILTER_SELECT": "select IIR Filter"
+    "IIR_FILTER_SELECT": "select IIR Filter",
+    "DE_EMPHASIS_FILTER_SELECT": "select Deemphasis Filter"
   }
 }

@@ -485,7 +485,7 @@ ControllerES9018K2M.prototype.setIirFilter = function(data){
   var result;
 
   var selected = data['iir_filter'].value;
-  self.logger.info("ControllerES9018K2M::setIirFilter:"+JSON.stringify(selected));
+  self.logger.info("ControllerES9018K2M::setIirFilter:"+selected);
 
   switch(selected) {
     case 0:                        // IIR Bandwidth: Normal 47K (for PCM)
@@ -551,38 +551,42 @@ ControllerES9018K2M.prototype.unmuteES9018K2m  = function(){
   self.writeSabreReg(0x07, self.reg7);
 };
 
-ControllerES9018K2M.prototype.setDeemphasis = function(value){ // register 6
+ControllerES9018K2M.prototype.setDeemphasisFilter = function(data) {
   var self=this;
   var result;
 
+  var selected = data['deemphasis_filter'].value;
+  self.logger.info("ControllerES9018K2M::setDeemphasisFilter:"+selected);
+
   result = "Deemphasis: ";
-  switch(value){
-    case 0:                        // OFF: 0 1 0 0 1 0 1 0 = 0x4A
+  switch(selected){
+    case 0:       // OFF: 0 1 0 0 1 0 1 0 = 0x4A
       self.writeSabreReg(0x06,0x4A);
       result += "OFF";
       break;
-    case 1:                        // AUTO: 1 0 0 0 1 0 1 0 = 0x8A
+    case 1:       // AUTO: 1 0 0 0 1 0 1 0 = 0x8A
       self.writeSabreReg(0x06,0x8A);
       result += "AUT";
       break;
-    case 2:                        // MANUAL 32K: 0 0 0 0 1 0 1 0 = 0x0A
+    case 2:       // MANUAL 32K: 0 0 0 0 1 0 1 0 = 0x0A
       self.writeSabreReg(0x06,0x0A);
       result += "32K";
       break;
-    case 3:                        // MANUAL 44K: 0 0 0 1 1 0 1 0 = 0x1A
+    case 3:       // MANUAL 44K: 0 0 0 1 1 0 1 0 = 0x1A
       self.writeSabreReg(0x06,0x1A);
       result += "44K";
       break;
-    case 4:                        // MANUAL 48K: 0 0 1 0 1 0 1 0 = 0x2A
+    case 4:       // MANUAL 48K: 0 0 1 0 1 0 1 0 = 0x2A
       self.writeSabreReg(0x06,0x2A);
       result += "48K";
       break;
-    case 5:                        // MANUAL RESERVED: 0 0 1 1 1 0 1 0 = 0x3A (for fun)
+    case 5:       // MANUAL RESERVED: 0 0 1 1 1 0 1 0 = 0x3A
       self.writeSabreReg(0x06,0x3A);
       result += "Reserved";
       break;
   }
 
+  self.logger.info("ControllerES9018K2M::setDeemphasisFilter:RESULT:"+result);
   return result;
 };
 

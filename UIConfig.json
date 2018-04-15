@@ -183,6 +183,63 @@
           ]
         }
       ]
+    },
+
+    {
+      "id": "deemphasis_filter_ctl",
+      "element": "section",
+      "label": "TRANSLATE.ES9018K2M.DE_EMPHASIS_FILTER",
+      "icon": "fa-cogs",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "miscellanea/es9018k2m_ctl",
+        "method": "setDeemphasisFilter"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.ES9018K2M.APPLY_FILTER",
+        "data": [
+          "deemphasis_filter"
+        ]
+      },
+      "content": [
+        {
+          "id": "deemphasis_filter",
+          "type": "number",
+          "element": "select",
+          "label": "TRANSLATE.ES9018K2M.DE_EMPHASIS_FILTER_SELECT",
+          "description": "",
+          "value": {
+            "value": 0,
+            "label": "OFF"
+          },
+          "options": [
+            {
+              "value": 0,
+              "label": "OFF"
+            },
+            {
+              "value": 1,
+              "label": "Auto"
+            },
+            {
+              "value": 2,
+              "label": "32K"
+            },
+            {
+              "value": 3,
+              "label": "44K"
+            },
+            {
+              "value": 4,
+              "label": "48K"
+            },
+            {
+              "value": 5,
+              "label": "Reserved"
+            }
+          ]
+        }
+      ]
     }
   ]
 }

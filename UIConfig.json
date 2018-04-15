@@ -17,30 +17,26 @@
       "saveButton": {
         "label": "TRANSLATE.ES9018K2M.VOLUME_SAVE",
         "data": [
-          "volume_adjust"
+          "volume_adjust", "mute"
         ]
       },
       "content": [
         {
           "id": "volume_adjust",
-          "type": "number",
-          "element": "input",
+          "element": "equalizer",
           "label": "TRANSLATE.ES9018K2M.VOLUME",
           "description": "",
-          "value": 0
-        },
-        {
-          "id": "check_device",
-          "element": "button",
-          "label": "TRANSLATE.ES9018K2M.CHECK_DEVICE",
-          "onClick": {
-            "type": "emit",
-            "message": "callMethod",
-            "data": {
-              "endpoint": "miscellanea/es9018k2m_ctl",
-              "method": "checkES9018k2m",
-              "data": ""
-            }
+          "config": {
+            "orientation": "horizontal",
+            "bars": [
+              {
+                "min": 0,
+                "max": 100,
+                "step": 1,
+                "value": 20,
+                "tooltip":"always"
+              }
+            ]
           }
         },
         {
@@ -61,38 +57,23 @@
       ]
     },
     {
-      "id": "volume_control_equ",
+      "id": "device_check",
       "element": "section",
-      "label": "TRANSLATE.ES9018K2M.VOLUME",
+      "label": "TRANSLATE.ES9018K2M.CHECK_DEVICE",
       "icon": "fa-cogs",
-      "onSave": {
-        "type": "controller",
-        "endpoint":"miscellanea/es9018k2m_ctl",
-        "method":"updateVolume"
-      },
-      "saveButton": {
-        "label": "TRANSLATE.ES9018K2M.VOLUME_SAVE",
-        "data": [
-          "volume_adjust"
-        ]
-      },
       "content": [
         {
-          "id": "volume_adjust",
-          "element": "equalizer",
-          "label": "Volume",
-          "description": "",
-          "config": {
-            "orientation": "horizontal",
-            "bars": [
-              {
-                "min": 0,
-                "max": 255,
-                "step": 2,
-                "value": 100,
-                "tooltip":"always"
-              }
-            ]
+          "id": "check_device",
+          "element": "button",
+          "label": "TRANSLATE.ES9018K2M.CHECK_DEVICE",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "miscellanea/es9018k2m_ctl",
+              "method": "checkES9018k2m",
+              "data": ""
+            }
           }
         }
       ]

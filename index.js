@@ -42,6 +42,7 @@ ControllerES9018K2M.prototype.onStart = function() {
   //self.addResource();
   self.initES9018k2m();
   self.volumeLevel = self.config.get("volume_level");
+  self.mute = self.config.get("mute");
 
   return libQ.resolve();
 };
@@ -100,7 +101,7 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
       uiconf.sections[0].description = self.getI18nString('I2S_ENABLED');
     else
       uiconf.sections[0].description = self.getI18nString('I2S_DISABLED');
-    uiconf.sections[0].content[0].value = self.volumeLevel;
+    uiconf.sections[0].content[1].value = !self.mute;
 
     defer.resolve(uiconf);
   })
@@ -114,15 +115,24 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
 
 ControllerES9018K2M.prototype.updateVolume = function(data) {
   var self = this;
-  var value = data['volume_adjust'];
+  var volume = data['volume_adjust'];
+  var mute = data['mute'];
 
-  self.logger.info("ControllerES9018K2M::updateVolume:"+value);
-  if (value)
-    self.volumeLevel = parseInt(value);
-  else
-    self.volumeLevel = value;
-  self.config.set('volume_level', self.volumeLevel);
+  self.logger.info("ControllerES9018K2M::updateVolume:"+volume);
+  self.logger.info("ControllerES9018K2M::updateVolume:mute:"+mute);
+
+  self.volumeLevel = parseInt(volume);
+  self.mute = !mute;
+
   self.setSabreVolume(self.volumeLevel);
+
+  if (mute)
+    self.unmuteES9018K2m();
+  else
+    self.muteES9018K2m();
+
+  self.config.set('volume_level', self.volumeLevel);
+  self.config.set('mute', self.mute);
 };
 
 ControllerES9018K2M.prototype.addResource = function() {
@@ -540,28 +550,19 @@ ControllerES9018K2M.prototype.setSabreVolume = function(regVal) {
 };
 
 ControllerES9018K2M.prototype.muteES9018K2m  = function(){
-  self.bitset(self.reg7, 0);               // Mute Channel 1
-  self.bitset(self.reg7, 1);               // Mute Channel 2
+  var self = this;
+
+  self.reg7=self.bitset(self.reg7, 0);               // Mute Channel 1
+  self.reg7=self.bitset(self.reg7, 1);               // Mute Channel 2
   self.writeSabreReg(0x07, self.reg7);
 };
 
 ControllerES9018K2M.prototype.unmuteES9018K2m  = function(){
-  self.bitclear(self.reg7, 0);             // Unmute Channel 1
-  self.bitclear(self.reg7, 1);             // Unmute Channel 2
-  self.writeSabreReg(0x07, self.reg7);
-};
-
-ControllerES9018K2M.prototype.setMuteOnOff = function(data) {
   var self = this;
-  var result;
 
-  var selected = data['deemphasis_filter'].value;
-  self.logger.info("ControllerES9018K2M::setMuteOnOff:"+selected);
-
-  if (selected)
-    muteES9018K2m();
-  else
-    unmuteES9018K2m();
+  self.reg7=self.bitclear(self.reg7, 0);             // Unmute Channel 1
+  self.reg7=self.bitclear(self.reg7, 1);             // Unmute Channel 2
+  self.writeSabreReg(0x07, self.reg7);
 };
 
 ControllerES9018K2M.prototype.setDeemphasisFilter = function(data) {

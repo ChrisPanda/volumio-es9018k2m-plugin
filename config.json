@@ -6,5 +6,9 @@
   "volume_level": {
     "type": "number",
     "value": 3
+  },
+  "mute": {
+    "type": "boolean",
+    "value": false
   }
 }

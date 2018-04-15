@@ -231,13 +231,14 @@ ControllerES9018K2M.prototype.bitclear = function(reg, value) {
 };
 
 // Set the DPLL Mode for I2S
-ControllerES9018K2M.prototype.setI2sDPLL = function (value){
+ControllerES9018K2M.prototype.setI2sDPLL = function (data){
   var self=this;
   var result;
 
+  var selected = data['i2s_dpll'].value;
   result = "DL: ";
   self.reg12 = self.reg12 & 0x0F;
-  switch(value) {   // set the DPLL values for I2S (upper 4 bits)
+  switch(selected) {   // set the DPLL values for I2S (upper 4 bits)
     case 0:
       self.reg12=self.reg12 | 0x00;
       self.writeSabreReg(0x0C,self.reg12);
@@ -324,12 +325,13 @@ ControllerES9018K2M.prototype.setI2sDPLL = function (value){
 };
 
 // Set the DPLL Mode for DSD -lower 4 bits
-ControllerES9018K2M.prototype.setDsdDPLL = function (value){
+ControllerES9018K2M.prototype.setDsdDPLL = function (data){
   var self=this;
   var result = "";
 
+  var selected = data['dsd_dpll'].value;
   self.reg12 = self.reg12 & 0xF0;
-  switch(value) {                // Here we set the DPLL values for DSD (lower 4 bits)
+  switch(selected) {                // Here we set the DPLL values for DSD (lower 4 bits)
     case 0:
       self.reg12=self.reg12 | 0x00;
       self.writeSabreReg(0x0C,self.reg12);
@@ -432,10 +434,10 @@ ControllerES9018K2M.prototype.setFirFilter = function(data){
   var result = "Fir: ";
 
   var selected = data['fir_filter'].value;
-  self.logger.info("ControllerES9018K2M::setFirFilter:"+JSON.stringify(selected));
+  self.logger.info("ControllerES9018K2M::setFirFilter:"+selected);
   self.logger.info("ControllerES9018K2M::REG7:"+self.reg7);
   self.logger.info("ControllerES9018K2M::REG21:"+self.reg21);
-  switch(selected.value) {
+  switch (selected) {
     case -1:
       result += "NONE";
       break;
@@ -464,13 +466,13 @@ ControllerES9018K2M.prototype.setFirFilter = function(data){
       result += "Minimum Phase";
       break;
     case 3:                       // Bypass oversampling filter
-      self.reg21=self.bitset(reg21,0);            // Bypass OSF: x x x x x x x 1
+      self.reg21=self.bitset(self.reg21,0);            // Bypass OSF: x x x x x x x 1
       self.writeSabreReg(0x15, self.reg21);
       result += "Bypass oversampling";
       break;
   }
   self.logger.info("ControllerES9018K2M::REG7:AFTER:"+self.reg7);
-  self.logger.info("ControllerES9018K2M::REG21:AFTER:"+self.reg21);
+  self.logger.info("ControllerES9018K2M::REG21:"+self.reg21);
 
   self.logger.info("ControllerES9018K2M::setFirFilter:RESULT:"+result);
 };
@@ -484,39 +486,39 @@ ControllerES9018K2M.prototype.setIirFilter = function(data){
 
   switch(selected.value) {
     case 0:                        // IIR Bandwidth: Normal 47K (for PCM)
-      self.bitclear(self.reg7,2);           // x x x x 0 0 x x
-      self.bitclear(self.reg7,3);
-      self.bitclear(self.reg21,2);          // Use IIR: x x x x x 0 x x
+      self.reg7=self.bitclear(self.reg7,2);           // x x x x 0 0 x x
+      self.reg7=self.bitclear(self.reg7,3);
+      self.reg21=self.bitclear(self.reg21,2);          // Use IIR: x x x x x 0 x x
       self.writeSabreReg(0x0E, self.reg7);
       self.writeSabreReg(0x15, self.reg21);
       result = "47K PCM";
       break;
     case 1:                        // IIR Bandwidth: 50k (for DSD) (D)
-      self.bitset(self.reg7,2);              // x x x x 0 1 x x
-      self.bitclear(self.reg7,3);
-      self.bitclear(self.reg21,2);           // Use IIR: x x x x x 0 x x
+      self.reg7=self.bitset(self.reg7,2);              // x x x x 0 1 x x
+      self.reg7=self.bitclear(self.reg7,3);
+      self.reg21=self.bitclear(self.reg21,2);           // Use IIR: x x x x x 0 x x
       self.writeSabreReg(0x0E, self.reg7);
       self.writeSabreReg(0x15, self.reg21);
       result = "50K DSD";
       break;
     case 2:                        // IIR Bandwidth: 60k (for DSD)
-      self.bitset(self.reg7,3);              // x x x x 1 0 x x
-      self.bitclear(self.reg7,2);
-      self.bitclear(self.reg21,2);           // Use IIR: x x x x x 0 x x
+      self.reg7=self.bitset(self.reg7,3);              // x x x x 1 0 x x
+      self.reg7=self.bitclear(self.reg7,2);
+      self.reg21=self.bitclear(self.reg21,2);           // Use IIR: x x x x x 0 x x
       self.writeSabreReg(0x0E, self.reg7);
       self.writeSabreReg(0x15, self.reg21);
       result = "60K DSD";
       break;
     case 3:                        // IIR Bandwidth: 70k (for DSD)
-      self.bitset(self.reg7,2);              // x x x x 1 1 x x
-      self.bitset(self.reg7,3);
-      self.bitclear(self.reg21,2);           // Use IIR: x x x x x 0 x x
+      self.reg7=self.bitset(self.reg7,2);              // x x x x 1 1 x x
+      self.reg7=self.bitset(self.reg7,3);
+      self.reg21=self.bitclear(self.reg21,2);           // Use IIR: x x x x x 0 x x
       self.writeSabreReg(0x0E, self.reg7);
       self.writeSabreReg(0x15, self.reg21);
       result = "70K DSD";
       break;
     case 4:                        // IIR OFF
-      self.bitset(self.reg21,2);             // Bypass IIR: x x x x x 1 x x
+      self.reg21=self.bitset(self.reg21,2);             // Bypass IIR: x x x x x 1 x x
       self.writeSabreReg(0x15, self.reg21);
       result = "OFF";
       break;

@@ -222,10 +222,12 @@ bitSet.prototype.toggle = function(reg, value) {
 
 ControllerES9018K2M.prototype.bitset = function(reg, value) {
   reg |= (1 << value);
+  return reg;
 };
 
 ControllerES9018K2M.prototype.bitclear = function(reg, value) {
   reg &= ~(1 << value);
+  return reg;
 };
 
 // Set the DPLL Mode for I2S
@@ -431,41 +433,44 @@ ControllerES9018K2M.prototype.setFirFilter = function(data){
 
   var selected = data['fir_filter'].value;
   self.logger.info("ControllerES9018K2M::setFirFilter:"+JSON.stringify(selected));
-
+  self.logger.info("ControllerES9018K2M::REG7:"+self.reg7);
+  self.logger.info("ControllerES9018K2M::REG21:"+self.reg21);
   switch(selected.value) {
     case -1:
       result += "NONE";
       break;
     case 0:                       // Slow FIR
-      self.bitset(self.reg7,5);             // x 0 1 x x x x x
-      self.bitclear(self.reg7,6);           // x 0 1 x x x x x
-      self.bitclear(self.reg21,0);          // Use OSF: x x x x x x x 0
+      self.reg7=self.bitset(self.reg7,5);             // x 0 1 x x x x x
+      self.reg7=self.bitclear(self.reg7,6);           // x 0 1 x x x x x
+      self.reg21=self.bitclear(self.reg21,0);         // Use OSF: x x x x x x x 0
       self.writeSabreReg(0x0E, self.reg7);
       self.writeSabreReg(0x15, self.reg21);
       result += "Slow";
       break;
     case 1:                       // Fast FIR (Sharp) -Default
-      self.bitclear(self.reg7,5);           // x 0 0 x x x x x
-      self.bitclear(self.reg7,6);           // x 0 0 x x x x x
-      self.bitclear(self.reg21,0);          // Use OSF: x x x x x x x 0
+      self.reg7=self.bitclear(self.reg7,5);           // x 0 0 x x x x x
+      self.reg7=self.bitclear(self.reg7,6);           // x 0 0 x x x x x
+      self.reg21=self.bitclear(self.reg21,0);          // Use OSF: x x x x x x x 0
       self.writeSabreReg(0x0E, self.reg7);
       self.writeSabreReg(0x15, self.reg21);
       result += "Fast Sharp";
       break;
     case 2:                       // Minimum phase filter (Sharp)
-      self.bitclear(self.reg7,5);           // x 1 0 x x x x x
-      self.bitset(self.reg7,6);             // x 1 0 x x x x x
-      self.bitclear(self.reg21,0);          // Use OSF: x x x x x x x 0
+      self.reg7=self.bitclear(self.reg7,5);           // x 1 0 x x x x x
+      self.reg7=self.bitset(self.reg7,6);             // x 1 0 x x x x x
+      self.reg21=self.bitclear(self.reg21,0);          // Use OSF: x x x x x x x 0
       self.writeSabreReg(0x0E, self.reg7);
       self.writeSabreReg(0x15, self.reg21);
       result += "Minimum Phase";
       break;
     case 3:                       // Bypass oversampling filter
-      self.bitset(reg21,0);            // Bypass OSF: x x x x x x x 1
+      self.reg21=self.bitset(reg21,0);            // Bypass OSF: x x x x x x x 1
       self.writeSabreReg(0x15, self.reg21);
       result += "Bypass oversampling";
       break;
   }
+  self.logger.info("ControllerES9018K2M::REG7:AFTER:"+self.reg7);
+  self.logger.info("ControllerES9018K2M::REG21:AFTER:"+self.reg21);
 
   self.logger.info("ControllerES9018K2M::setFirFilter:RESULT:"+result);
 };

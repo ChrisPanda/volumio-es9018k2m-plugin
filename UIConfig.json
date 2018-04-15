@@ -70,10 +70,10 @@
             "orientation": "horizontal",
             "bars": [
               {
-                "min": "0",
-                "max": "255",
-                "step": "2",
-                "value": "100",
+                "min": 0,
+                "max": 255,
+                "step": 2,
+                "value": 100,
                 "tooltip":"always"
               }
             ]
@@ -81,8 +81,6 @@
         }
       ]
     },
-
-
 
 
     {

@@ -3,7 +3,8 @@
 var libQ = require('kew');
 var fs = require('fs-extra');
 var config = require('v-conf');
-var i2c  = require('i2c-bus');
+var i2cOld = require('i2c-bus');
+var i2c = require('i2c');
 
 module.exports = ControllerES9018K2M;
 
@@ -170,19 +171,21 @@ ControllerES9018K2M.prototype.checkES9018k2m = function() {
   var self=this;
 
   self.logger.info("ControllerES9018K2M::checkES9018k2m");
-  var chipStatus = self.readRegister(self.statusReg);
-  if ((chipStatus & 0x1C) === 16) {
-    self.es9018k2m = true;
-    if (chipStatus & 0x20)
-      self.es9018k2mRevision = 'rev V';
+  self.readRegister(self.statusReg).then (function(chipStatus) {
+    if ((chipStatus & 0x1C) === 16) {
+      self.es9018k2m = true;
+      if (chipStatus & 0x20)
+        self.es9018k2mRevision = 'rev V';
+      else
+        self.es9018k2mRevision = 'rev W';
+    }
     else
-      self.es9018k2mRevision = 'rev W';
-  }
-  else
-    self.es9018k2m = false;
+      self.es9018k2m = false;
 
-  self.logger.info("ControllerES9018K2M::checkES9018k2m:"+self.es9018k2m);
-  self.logger.info("ControllerES9018K2M::ES9018k2mRevision:"+self.es9018k2mRevision);
+    self.logger.info("ControllerES9018K2M::checkES9018k2m:" + self.es9018k2m);
+    self.logger.info("ControllerES9018K2M::ES9018k2mRevision:"
+        + self.es9018k2mRevision);
+  });
 };
 
 ControllerES9018K2M.prototype.startES9018K2M = function() {
@@ -619,21 +622,60 @@ ControllerES9018K2M.prototype.setBalance = function(value){
 ControllerES9018K2M.prototype.readRegister = function(regAddr) {
   var self=this;
   var result;
+  var defer = libQ.defer();
 
-  var i2c1 = i2c.openSync(1);
-  result = i2c1.readByteSync(self.SABRE_ADDR, regAddr);
+  /*
+  try {
+    var buffer = new Buffer(1);
+
+    buffer[0] = regAddr;
+    i2c1.i2cWriteSync(self.SABRE_ADDR, 1, buffer);
+    i2c1.i2cReadSync(self.SABRE_ADDR, 1, buffer);
+    self.logger.info("ControllerES9018K2M::I2C:READ:"+ buffer);
+    defer.resolve(buffer);
+  } catch (e) {
+    self.logger.info("ControllerES9018K2M::reaRegisterCatch:ERR:"+  JSON.stringify(e));
+  }
   i2c1.closeSync();
+  */
+  try {
+    var wire = new i2c(self.SABRE_ADDR, {device: '/dev/i2c-1'});
+    wire.writeByte(regAddr, function(err) {
+      self.logger.info("ControllerES9018K2M::readRegister:Write:"+  JSON.stringify(err));
+    });
+    wire.readByte(function(err, res) {
+      self.logger.info("ControllerES9018K2M::readRegister:Read:"+ res);
+      defer.resolve(res);
+    });
+  }
+  catch (e) {
+    self.logger.info("ControllerES9018K2M::readRegister:ERROR:"+  JSON.stringify(e));
+  }
 
-  return result;
+  return defer.promise;
 };
 
 // CONTROLLING THE DIGITAL ATTENUATION (VOLUME)
 ControllerES9018K2M.prototype.writeSabreLeftReg = function (regAddr, regVal) {
   var self=this;
 
-  var i2c1 = i2c.openSync(1);
+  var wire = new i2c(self.SABRE_ADDR, {device: '/dev/i2c-1'});
+  self.logger.info("ControllerES9018K2M::writeSabreLeftReg:"+regVal);
+  wire.writeBytes(regAddr, [regVal], function(err) {
+    self.logger.info("ControllerES9018K2M::writeSabreLeftReg:DONE:"+  JSON.stringify(err));
+  });
+  /*
+  wire.writeByte(regAddr, function(err) {
+    self.logger.info("ControllerES9018K2M::writeSabreLeft1:"+  JSON.stringify(err));
+  });
+  wire.writeByte(regVal, function(err) {
+    self.logger.info("ControllerES9018K2M::writeSabreLeft2:"+  JSON.stringify(err));
+  });
+
+  var i2c1 = i2cOrg.openSync(1);
   i2c1.i2cWriteSync(self.SABRE_ADDR, regAddr, regVal);
   i2c1.closeSync();
+    */
 };
 
 // The following routine writes to both chips in dual mono mode. With some exceptions, one only needs
@@ -645,3 +687,63 @@ ControllerES9018K2M.prototype.writeSabreReg = function(regAddr, regVal) {
   self.writeSabreLeftReg(regAddr, regVal);
 };
 
+/////////////////////////////////////////////////////////////////////
+function boolToYesNo(bool) {
+  return bool ? 'yes' : 'no';
+}
+
+ControllerES9018K2M.prototype.checkI2C = function() {
+  var self=this;
+
+  var i2c1 = i2cOld.openSync(1, true);
+  var i2cFuncs = i2c1.i2cFuncsSync();
+  self.logger.info("ControllerES9018K2M::SCAN:"+ i2c1.scanSync(self.SABRE_ADDR));
+  self.logger.info("ControllerES9018K2M::I2C:"+ boolToYesNo(i2cFuncs.i2c));
+  self.logger.info("ControllerES9018K2M::SMBus Quick Command:" + boolToYesNo(i2cFuncs.smbusQuick));
+  self.logger.info("ControllerES9018K2M::SMBus Send Byte:" + boolToYesNo(i2cFuncs.smbusSendByte));
+  self.logger.info("ControllerES9018K2M::SMBus Receive Byte:" + boolToYesNo(i2cFuncs.smbusReceiveByte));
+  self.logger.info("ControllerES9018K2M::SMBus Write Byte:" + boolToYesNo(i2cFuncs.smbusWriteByte));
+  self.logger.info("ControllerES9018K2M::SMBus Read Byte:" + boolToYesNo(i2cFuncs.smbusReadByte));
+  self.logger.info("ControllerES9018K2M::SMBus Write Word:" + boolToYesNo(i2cFuncs.smbusWriteWord));
+  self.logger.info("ControllerES9018K2M::SMBus Read Word:" + boolToYesNo(i2cFuncs.smbusReadWord));
+  self.logger.info("ControllerES9018K2M::SMBus Process Call:" + boolToYesNo(i2cFuncs.smbusProcCall));
+  self.logger.info("ControllerES9018K2M::SMBus Block Write:" + boolToYesNo(i2cFuncs.smbusWriteBlock));
+  self.logger.info("ControllerES9018K2M::SMBus Block Read:" + boolToYesNo(i2cFuncs.smbusReadBlock));
+  self.logger.info("ControllerES9018K2M::SMBus Block Process Call:" + boolToYesNo(i2cFuncs.smbusBlockProcCall));
+  self.logger.info("ControllerES9018K2M::SMBus PEC:" + boolToYesNo(i2cFuncs.smbusPec));
+  self.logger.info("ControllerES9018K2M::I2C Block Write:" + boolToYesNo(i2cFuncs.smbusWriteI2cBlock));
+  self.logger.info("ControllerES9018K2M::I2C Block Read:" + boolToYesNo(i2cFuncs.smbusReadI2cBlock));
+  i2c1.closeSync();
+};
+
+ControllerES9018K2M.prototype.i2cScan = function() {
+  var self=this;
+  var EBUSY = 16; /* Device or resource busy */
+  var first, last;
+
+  first=0;
+  last=250;
+  var addr;
+
+  self.logger.info("ControllerES9018K2M::i2cScan:");
+  var i2c1 = i2cOld.openSync(1, true);
+  for (addr = 0; addr <= 127; addr += 1) {
+    if (addr < first || addr > last) {
+      //fs.writeSync(0, '   ');
+    } else {
+      try {
+        i2c1.receiveByteSync(addr);
+        self.logger.info("ControllerES9018K2M::i2cScanFOUND:"+  addr.toString(16)); // device found, print addr
+      } catch (e) {
+        if (e.errno === EBUSY) {
+          self.logger.info("ControllerES9018K2M::i2cScan:BUSY:"+  addr.toString(16));
+        } else {
+          //fs.writeSync(0, ' --');
+        }
+      }
+    }
+  }
+
+  i2c1.closeSync();
+  self.logger.info("ControllerES9018K2M::DONE");
+};

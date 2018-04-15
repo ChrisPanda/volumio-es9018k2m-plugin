@@ -4,20 +4,6 @@
   },
   "sections": [
     {
-      "id": "check_device",
-      "element": "button",
-      "label": "TRANSLATE.ES9018K2M.CHECK_DEVICE",
-      "onClick": {
-        "type": "emit",
-        "message": "callMethod",
-        "data": {
-          "endpoint": "miscellanea/es9018k2m_ctl",
-          "method": "checkES9018k2m",
-          "data": ""
-        }
-      }
-    },
-    {
       "id": "volume_control",
       "element": "section",
       "label": "TRANSLATE.ES9018K2M.VOLUME",
@@ -38,10 +24,24 @@
           "id": "volume_adjust",
           "type": "number",
           "element": "input",
-          "label": "Volume",
+          "label": "TRANSLATE.ES9018K2M.VOLUME",
           "description": "",
           "value": 0
-        }
+        },
+        {
+          "id": "check_device",
+          "element": "button",
+          "label": "TRANSLATE.ES9018K2M.CHECK_DEVICE",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "miscellanea/es9018k2m_ctl",
+              "method": "checkES9018k2m",
+              "data": ""
+            }
+          }
+        },
       ]
     },
     {

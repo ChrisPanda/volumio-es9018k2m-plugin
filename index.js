@@ -94,7 +94,7 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
       __dirname + '/UIConfig.json')
   .then(function(uiconf)
   {
-    uiconf.sections[1].content[0].value = self.volumeLevel;
+    uiconf.sections[0].content[0].value = self.volumeLevel;
 
     defer.resolve(uiconf);
   })

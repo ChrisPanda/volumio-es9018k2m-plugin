@@ -737,7 +737,7 @@ ControllerES9018K2M.prototype.setBalance = function(value){
     if (value > 19) {         // Adjusting balance to right channel
       self.rBal =0;           // No additional attenuation for right channel
       self.lBal =value-19;    // Attenuate left channel
-      result = lBal/2;        // Print whole dB value
+      result = Math.floor(self.lBal/2).toString();        // Print whole dB value
       if(self.lBal % 2)
         result += ".5";       // Print fraction dB value
       else
@@ -747,7 +747,7 @@ ControllerES9018K2M.prototype.setBalance = function(value){
     else {                     // Adjusting balance to left channel
       self.lBal=0;             // No additional attenuation for left channel
       self.rBal=19-value;      // Attenuate right channel
-      result = self.rBal/2;    // Print whole dB value
+      result = Math.floor(self.rBal/2).toString();    // Print whole dB value
       if(self.rBal % 2)
         result += ".5";        // Print fraction dB value
       else
@@ -764,9 +764,8 @@ ControllerES9018K2M.prototype.setBalance = function(value){
   return result;
 };
 
-ControllerES9018K2M.prototype.resetBalanceCtl = function(data) {
+ControllerES9018K2M.prototype.resetBalanceCtl = function() {
   var self = this;
-  var result;
 
   self.updateUIConfig(
       null,         // volume
@@ -776,7 +775,6 @@ ControllerES9018K2M.prototype.resetBalanceCtl = function(data) {
       null,         // IIR
       null          // deemphasis
   );
-
 
   self.setBalance(19);
   self.setSabreVolume(self.currAttnu);

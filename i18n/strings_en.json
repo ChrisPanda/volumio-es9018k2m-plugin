@@ -7,6 +7,7 @@
     "APPLY": "Apply",
     "BALANCE": "Left/Right Balance",
     "BALANCE_ADJUST": "Adjust Balance",
+    "BALANCE_RESET": "Reset Balance",
     "VOLUME": "Volume",
     "VOLUME_SAVE": "Volume Save",
     "CHECK_DEVICE": "Check Device",

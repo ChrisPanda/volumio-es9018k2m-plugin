@@ -111,9 +111,10 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
     else
       uiconf.sections[0].description = self.getI18nString('I2S_DISABLED');
 
+    uiconf.sections[1].content[0].value = self.volumeLevel;
     uiconf.sections[1].content[1].value = !self.mute;
     uiconf.sections[3].content[0].value = self.fir;
-    uiconf.sections[3].content[0].value = self.iir;
+    uiconf.sections[3].content[1].value = self.iir;
     uiconf.sections[4].content[0].value = self.deemphasis;
     defer.resolve(uiconf);
 
@@ -135,7 +136,7 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
   return defer.promise;
 };
 
-ControllerES9018K2M.prototype.updateUIConfig = function() {
+ControllerES9018K2M.prototype.updateUIConfig = function(volume, mute, fir, iir, deemphasis) {
   var self=this;
 
   var lang_code = self.commandRouter.sharedVars.get('language_code');
@@ -144,10 +145,27 @@ ControllerES9018K2M.prototype.updateUIConfig = function() {
       __dirname + '/UIConfig.json')
   .then(function(uiconf)
   {
-    self.configManager.setUIConfigParam(uiconf, 'sections[0].content[0].value', {
-      value: self.podcasts.items[0].title,
-      label: self.podcasts.items[0].title
-    });
+    if (volume)
+      self.configManager.setUIConfigParam(
+          uiconf, 'sections[1].content[0].value', volume
+      );
+    if (mute)
+      self.configManager.setUIConfigParam(
+        uiconf, 'sections[1].content[1].value', mute
+      );
+    if (fir)
+      self.configManager.setUIConfigParam(
+          uiconf, 'sections[3].content[0].value', fir
+      );
+    if (iir)
+      self.configManager.setUIConfigParam(
+          uiconf, 'sections[3].content[1].value', iir
+      );
+    if (deemphasis)
+      self.configManager.setUIConfigParam(
+          uiconf, 'sections[4].content[0].value', deemphasis
+      );
+
     self.commandRouter.broadcastMessage('pushUiConfig', uiconf);
   })
   .fail(function()
@@ -220,17 +238,33 @@ ControllerES9018K2M.prototype.checkES9018k2m = function() {
     self.logger.info("ControllerES9018K2M::checkES9018k2m:" + self.es9018k2m);
     self.logger.info("ControllerES9018K2M::ES9018k2mRevision:"
         + self.es9018k2mRevision);
+
+    if (self.es9018k2m)
+      message = "Found: es9018k2m " + revision;
+    else
+      message = "No Found: es9018k2m i2s";
+
+    self.commandRouter.pushToastMessage('info', self.serviceName, message);
   });
+};
 
-  if (self.es9018k2m)
-    message = "Found: es9018k2m " + revision;
-  else
-    message = "No Found: es9018k2m i2s";
+ControllerES9018K2M.prototype.defaultEs9018k2mCtl = function() {
+  var self = this;
 
-  self.commandRouter.pushToastMessage('info', self.serviceName, message);
+  self.defaultEs9018k2m();
+  self.updateUIConfig(
+      {value: self.volumeLevel},
+      {value: !self.mute},
+      {label:"Fast FIR (default)", value:1},    // FIR
+      {label:"OFF", value:4},                   // IIR
+      {label:"OFF", value:0}                    // deemphasis
+  );
+  self.commandRouter.pushToastMessage('info', self.serviceName, "reset to default");
 };
 
 ControllerES9018K2M.prototype.defaultEs9018k2m = function() {
+  var self = this;
+
   self.muteES9018K2m();                   // Mute DACs
   self.muteES9018K2m();                   // Redundant mute DACs
   self.writeSabreReg(0x00, self.reg0);    // System Settings

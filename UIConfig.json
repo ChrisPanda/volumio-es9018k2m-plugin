@@ -33,7 +33,7 @@
             "message": "callMethod",
             "data": {
               "endpoint": "miscellanea/es9018k2m_ctl",
-              "method": "defaultEs9018k2m",
+              "method": "defaultEs9018k2mCtl",
               "data": ""
             }
           }

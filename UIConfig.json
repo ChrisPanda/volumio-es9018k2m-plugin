@@ -4,11 +4,47 @@
   },
   "sections": [
     {
+      "id": "device_check",
+      "element": "section",
+      "label": "TRANSLATE.ES9018K2M.CHECK_DEVICE",
+      "icon": "fa-cogs",
+      "description": "",
+      "content": [
+        {
+          "id": "check_device",
+          "element": "button",
+          "label": "TRANSLATE.ES9018K2M.CHECK_DEVICE",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "miscellanea/es9018k2m_ctl",
+              "method": "checkES9018k2m",
+              "data": ""
+            }
+          }
+        },
+        {
+          "id": "init_device",
+          "element": "button",
+          "label": "TRANSLATE.ES9018K2M.DEFAULT_VALUE",
+          "onClick": {
+            "type": "emit",
+            "message": "callMethod",
+            "data": {
+              "endpoint": "miscellanea/es9018k2m_ctl",
+              "method": "defaultEs9018k2m",
+              "data": ""
+            }
+          }
+        }
+      ]
+    },
+    {
       "id": "volume_control",
       "element": "section",
       "label": "TRANSLATE.ES9018K2M.VOLUME",
       "icon": "fa-cogs",
-      "description": "",
       "onSave": {
         "type": "controller",
         "endpoint":"miscellanea/es9018k2m_ctl",
@@ -56,22 +92,53 @@
         }
       ]
     },
+
     {
-      "id": "device_check",
+      "id": "balance",
       "element": "section",
-      "label": "TRANSLATE.ES9018K2M.CHECK_DEVICE",
+      "label": "TRANSLATE.ES9018K2M.BALANCE",
       "icon": "fa-cogs",
+      "description": "",
+      "onSave": {
+        "type": "controller",
+        "endpoint":"miscellanea/es9018k2m_ctl",
+        "method":"setBalanceCtl"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.ES9018K2M.APPLY",
+        "data": [
+          "balance_adjust"
+        ]
+      },
       "content": [
         {
-          "id": "check_device",
+          "id": "balance_adjust",
+          "element": "equalizer",
+          "label": "TRANSLATE.ES9018K2M.BALANCE_ADJUST",
+          "description": "",
+          "config": {
+            "orientation": "horizontal",
+            "bars": [
+              {
+                "min": 0,
+                "max": 38,
+                "step": 1,
+                "value": 19,
+                "tooltip":"always"
+              }
+            ]
+          }
+        },
+        {
+          "id": "balance_reset",
           "element": "button",
-          "label": "TRANSLATE.ES9018K2M.CHECK_DEVICE",
+          "label": "TRANSLATE.ES9018K2M.BALANCE_RESET",
           "onClick": {
             "type": "emit",
             "message": "callMethod",
             "data": {
               "endpoint": "miscellanea/es9018k2m_ctl",
-              "method": "checkES9018k2m",
+              "method": "resetBalanceCtl",
               "data": ""
             }
           }
@@ -79,21 +146,20 @@
       ]
     },
 
-
     {
-      "id": "fir_filter_ctl",
+      "id": "fir_iir_filter_ctl",
       "element": "section",
-      "label": "TRANSLATE.ES9018K2M.FIR_FILTER",
+      "label": "TRANSLATE.ES9018K2M.FIR_IIR_FILTER",
       "icon": "fa-cogs",
       "onSave": {
         "type": "controller",
         "endpoint": "miscellanea/es9018k2m_ctl",
-        "method": "setFirFilter"
+        "method": "setFirIirFilterCtl"
       },
       "saveButton": {
         "label": "TRANSLATE.ES9018K2M.APPLY_FILTER",
         "data": [
-          "fir_filter"
+          "fir_filter", "iir_filter"
         ]
       },
       "content": [
@@ -125,26 +191,7 @@
               "label": "Bypass oversampling"
             }
           ]
-        }
-      ]
-    },
-    {
-      "id": "iir_filter_ctl",
-      "element": "section",
-      "label": "TRANSLATE.ES9018K2M.IIR_FILTER",
-      "icon": "fa-cogs",
-      "onSave": {
-        "type": "controller",
-        "endpoint": "miscellanea/es9018k2m_ctl",
-        "method": "setIirFilter"
-      },
-      "saveButton": {
-        "label": "TRANSLATE.ES9018K2M.APPLY_FILTER",
-        "data": [
-          "iir_filter"
-        ]
-      },
-      "content": [
+        },
         {
           "id": "iir_filter",
           "type": "number",
@@ -189,7 +236,7 @@
       "onSave": {
         "type": "controller",
         "endpoint": "miscellanea/es9018k2m_ctl",
-        "method": "setDeemphasisFilter"
+        "method": "setDeemphasisFilterCtl"
       },
       "saveButton": {
         "label": "TRANSLATE.ES9018K2M.APPLY_FILTER",
@@ -215,7 +262,7 @@
             },
             {
               "value": 1,
-              "label": "Auto"
+              "label": "Auto in SPDIF"
             },
             {
               "value": 2,

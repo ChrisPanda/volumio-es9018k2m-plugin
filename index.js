@@ -716,7 +716,7 @@ ControllerES9018K2M.prototype.unmuteES9018K2m  = function(){
 ControllerES9018K2M.prototype.setBalanceCtl = function(data) {
   var self = this;
 
-  var value = data['balance_adjust'].value;
+  var value = data['balance_adjust'];
   self.logger.info("ControllerES9018K2M::setBalanceCtl:"+value);
 
   self.setBalance(value);

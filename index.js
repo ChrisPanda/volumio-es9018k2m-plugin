@@ -113,6 +113,7 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
 
     uiconf.sections[1].content[0].value = self.volumeLevel;
     uiconf.sections[1].content[1].value = !self.mute;
+    uiconf.sections[2].content[0].value = self.balance;
     uiconf.sections[3].content[0].value = self.fir;
     uiconf.sections[3].content[1].value = self.iir;
     uiconf.sections[4].content[0].value = self.deemphasis;
@@ -136,7 +137,7 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
   return defer.promise;
 };
 
-ControllerES9018K2M.prototype.updateUIConfig = function(volume, mute, fir, iir, deemphasis) {
+ControllerES9018K2M.prototype.updateUIConfig = function(volume, mute, balance, fir, iir, deemphasis) {
   var self=this;
 
   var lang_code = self.commandRouter.sharedVars.get('language_code');
@@ -152,6 +153,10 @@ ControllerES9018K2M.prototype.updateUIConfig = function(volume, mute, fir, iir, 
     if (mute)
       self.configManager.setUIConfigParam(
         uiconf, 'sections[1].content[1].value', mute
+      );
+    if (balance)
+      self.configManager.setUIConfigParam(
+          uiconf, 'sections[2].content[0].value', balance
       );
     if (fir)
       self.configManager.setUIConfigParam(
@@ -253,8 +258,9 @@ ControllerES9018K2M.prototype.defaultEs9018k2mCtl = function() {
 
   self.defaultEs9018k2m();
   self.updateUIConfig(
-      {value: self.volumeLevel},
-      {value: !self.mute},
+      {value: 20},
+      {value: true},                            // mute
+      {value: 19},                              // balance
       {label:"Fast FIR (default)", value:1},    // FIR
       {label:"OFF", value:4},                   // IIR
       {label:"OFF", value:0}                    // deemphasis
@@ -761,6 +767,16 @@ ControllerES9018K2M.prototype.setBalance = function(value){
 ControllerES9018K2M.prototype.resetBalanceCtl = function(data) {
   var self = this;
   var result;
+
+  self.updateUIConfig(
+      null,         // volume
+      null,         // mute
+      {value: 19},  // balance
+      null,         // FIR
+      null,         // IIR
+      null          // deemphasis
+  );
+
 
   self.setBalance(19);
   self.setSabreVolume(self.currAttnu);

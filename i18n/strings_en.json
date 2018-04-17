@@ -1,23 +1,27 @@
 {
   "PLUGIN_NAME": "es9018k2m Plugin",
   "I2S_ENABLED": "es9018k2m i2s DAC is enabled.",
-  "I2S_DISABLED": "Current i2s DAC is not es9018k2m. The plugin can't control status.",
+  "I2S_DISABLED": "Current DAC is not an es9018k2m that supports i2c so plugin can't control status.",
   "ES9018K2M": {
     "CONFIG": "configuration",
     "APPLY": "Apply",
+    "SAVE": "Save",
     "BALANCE": "Left/Right Balance",
     "BALANCE_ADJUST": "Adjust Balance",
     "BALANCE_RESET": "Reset Balance",
-    "VOLUME": "Volume",
+    "VOLUME": "H/W Volume",
     "VOLUME_SAVE": "Volume Save",
     "CHECK_DEVICE": "Check Device",
     "DEFAULT_VALUE": "Load default value",
-    "FIR_IIR_FILTER": "FIR & IIR Digital Filter",
+    "DIGITAL_FILTER": "Digital Filter",
     "DE_EMPHASIS_FILTER": "Deemphasis Filter",
     "APPLY_FILTER": "Apply Filter",
-    "FIR_FILTER_SELECT": "select FIR Filter",
-    "IIR_FILTER_SELECT": "select IIR Filter",
+    "FIR_FILTER_SELECT": "FIR(Finite Impulse Response) Filter",
+    "IIR_FILTER_SELECT": "IIR(Infinite  Impulse Response) Filter",
     "DE_EMPHASIS_FILTER_SELECT": "select Deemphasis Filter",
-    "MUTE_ON_OFF": "Normal/Mute"
+    "MUTE_ON_OFF": "Normal/Mute",
+    "DPLL_FILTER": "DPLL(Digital Phase Locked Loop) Filter",
+    "I2S_DPLL_FILTER": "i2s DPLL filter",
+    "DSD_DPLL_FILTER": "dsd DPLL filter"
   }
 }

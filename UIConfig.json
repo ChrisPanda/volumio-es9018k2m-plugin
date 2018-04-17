@@ -149,17 +149,17 @@
     {
       "id": "fir_iir_filter_ctl",
       "element": "section",
-      "label": "TRANSLATE.ES9018K2M.FIR_IIR_FILTER",
+      "label": "TRANSLATE.ES9018K2M.DIGITAL_FILTER",
       "icon": "fa-cogs",
       "onSave": {
         "type": "controller",
         "endpoint": "miscellanea/es9018k2m_ctl",
-        "method": "setFirIirFilterCtl"
+        "method": "setDigitalFilterCtl"
       },
       "saveButton": {
         "label": "TRANSLATE.ES9018K2M.APPLY_FILTER",
         "data": [
-          "fir_filter", "iir_filter"
+          "fir_filter", "iir_filter", "deemphasis_filter"
         ]
       },
       "content": [
@@ -224,27 +224,7 @@
               "label": "OFF"
             }
           ]
-        }
-      ]
-    },
-
-    {
-      "id": "deemphasis_filter_ctl",
-      "element": "section",
-      "label": "TRANSLATE.ES9018K2M.DE_EMPHASIS_FILTER",
-      "icon": "fa-cogs",
-      "onSave": {
-        "type": "controller",
-        "endpoint": "miscellanea/es9018k2m_ctl",
-        "method": "setDeemphasisFilterCtl"
-      },
-      "saveButton": {
-        "label": "TRANSLATE.ES9018K2M.APPLY_FILTER",
-        "data": [
-          "deemphasis_filter"
-        ]
-      },
-      "content": [
+        },
         {
           "id": "deemphasis_filter",
           "type": "number",
@@ -279,6 +259,180 @@
             {
               "value": 5,
               "label": "Reserved"
+            }
+          ]
+        }
+      ]
+    },
+
+    {
+      "id": "dpll_filter_ctl",
+      "element": "section",
+      "label": "TRANSLATE.ES9018K2M.DPLL_FILTER",
+      "icon": "fa-cogs",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "miscellanea/es9018k2m_ctl",
+        "method": "setDpllFilterCtl"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.ES9018K2M.APPLY_FILTER",
+        "data": [
+          "i2sDPLL_filter",  "dsdDPLL_filter"
+        ]
+      },
+      "content": [
+        {
+          "id": "i2sDPLL_filter",
+          "type": "number",
+          "element": "select",
+          "label": "TRANSLATE.ES9018K2M.I2S_DPLL_FILTER",
+          "description": "",
+          "value": {
+            "value": 0,
+            "label": "Off"
+          },
+          "options": [
+            {
+              "value": 0,
+              "label": "Off"
+            },
+            {
+              "value": 1,
+              "label": "01 (lowest bandwidth)"
+            },
+            {
+              "value": 2,
+              "label": "02"
+            },
+            {
+              "value": 3,
+              "label": "03"
+            },
+            {
+              "value": 4,
+              "label": "04"
+            },
+            {
+              "value": 5,
+              "label": "05 (default)"
+            },
+            {
+              "value": 6,
+              "label": "06"
+            },
+            {
+              "value": 7,
+              "label": "07"
+            },
+            {
+              "value": 8,
+              "label": "08"
+            },
+            {
+              "value": 9,
+              "label": "09"
+            },
+            {
+              "value": 10,
+              "label": "10"
+            },
+            {
+              "value": 11,
+              "label": "11"
+            },
+            {
+              "value": 12,
+              "label": "12"
+            },
+            {
+              "value": 13,
+              "label": "13"
+            },
+            {
+              "value": 14,
+              "label": "14"
+            },
+            {
+              "value": 15,
+              "label": "15 (highest bandwidth)"
+            }
+          ]
+        },
+        {
+          "id": "dsdDPLL_filter",
+          "type": "number",
+          "element": "select",
+          "label": "TRANSLATE.ES9018K2M.DSD_DPLL_FILTER",
+          "description": "",
+          "value": {
+            "value": 0,
+            "label": "Off"
+          },
+          "options": [
+            {
+              "value": 0,
+              "label": "Off"
+            },
+            {
+              "value": 1,
+              "label": "01 (lowest bandwidth)"
+            },
+            {
+              "value": 2,
+              "label": "02"
+            },
+            {
+              "value": 3,
+              "label": "03"
+            },
+            {
+              "value": 4,
+              "label": "04"
+            },
+            {
+              "value": 5,
+              "label": "05"
+            },
+            {
+              "value": 6,
+              "label": "06"
+            },
+            {
+              "value": 7,
+              "label": "07"
+            },
+            {
+              "value": 8,
+              "label": "08"
+            },
+            {
+              "value": 9,
+              "label": "09"
+            },
+            {
+              "value": 10,
+              "label": "10  (default)"
+            },
+            {
+              "value": 11,
+              "label": "11"
+            },
+            {
+              "value": 12,
+              "label": "12"
+            },
+            {
+              "value": 13,
+              "label": "13"
+            },
+            {
+              "value": 14,
+              "label": "14"
+            },
+            {
+              "value": 15,
+              "label": "15 (highest bandwidth)"
             }
           ]
         }

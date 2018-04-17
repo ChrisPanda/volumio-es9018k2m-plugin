@@ -3,7 +3,7 @@
     "type": "boolean",
     "value": false
   },
-  "volume_level": {
+  "volumeLevel": {
     "type": "number",
     "value": 3
   },
@@ -11,13 +11,17 @@
     "type": "boolean",
     "value": false
   },
+  "balance": {
+    "type": "number",
+    "value": 0
+  },
   "fir": {
     "type": "number",
     "value": 1
   },
   "firLabel": {
     "type": "string",
-    "value": ""
+    "value": "Fast FIR (default)"
   },
   "iir": {
     "type": "number",
@@ -25,7 +29,7 @@
   },
   "iirLabel": {
     "type": "string",
-    "value": ""
+    "value": "OFF"
   },
   "deemphasis": {
     "type": "number",
@@ -33,10 +37,22 @@
   },
   "deemphasisLabel": {
     "type": "string",
-    "value": ""
+    "value": "OFF"
   },
-  "balance": {
+  "i2sDPLL": {
     "type": "number",
-    "value": 0
+    "value": 5
+  },
+  "i2sLabelDPLL": {
+    "type": "string",
+    "value": "05 (default)"
+  },
+  "dsdDPLL": {
+    "type": "number",
+    "value": 10
+  },
+  "dsdLabelDPLL": {
+    "type": "string",
+    "value": "10 (default)"
   }
 }

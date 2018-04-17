@@ -15,16 +15,28 @@
     "type": "number",
     "value": 1
   },
+  "firLabel": {
+    "type": "string",
+    "value": ""
+  },
   "iir": {
     "type": "number",
     "value": 4
+  },
+  "iirLabel": {
+    "type": "string",
+    "value": ""
   },
   "deemphasis": {
     "type": "number",
     "value": 0
   },
+  "deemphasisLabel": {
+    "type": "string",
+    "value": ""
+  },
   "balance": {
     "type": "number",
-    "value": 19
+    "value": 0
   }
 }

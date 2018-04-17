@@ -41,11 +41,15 @@ ControllerES9018K2M.prototype.onStart = function() {
   self.loadI18nStrings();
   self.initEs9018k2m();
   self.checkES9018k2m();
+
   self.volumeLevel = self.config.get("volume_level");
   self.mute = self.config.get("mute");
   self.fir =  self.config.get('fir');
+  self.firLabel =  self.config.get('firLabel');
   self.iir =  self.config.get('iir');
+  self.iirLabel =  self.config.get('iirLabel');
   self.deemphasis =  self.config.get('deemphasis');
+  self.deemphasisLabel =  self.config.get('deemphasisLabel');
   self.balance =  self.config.get('balance');
 
   self.serviceName = "es9018k2m_ctl";
@@ -111,12 +115,15 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
     else
       uiconf.sections[0].description = self.getI18nString('I2S_DISABLED');
 
-    uiconf.sections[1].content[0].value = self.volumeLevel;
+    uiconf.sections[1].content[0].config.bars.value = self.volumeLevel;
     uiconf.sections[1].content[1].value = !self.mute;
-    uiconf.sections[2].content[0].value = self.balance;
-    uiconf.sections[3].content[0].value = self.fir;
-    uiconf.sections[3].content[1].value = self.iir;
-    uiconf.sections[4].content[0].value = self.deemphasis;
+    uiconf.sections[2].content[0].config.bars.value = self.balance;
+    uiconf.sections[3].content[0].value =
+        {value: self.fir, label: self.firLabel};
+    uiconf.sections[3].content[1].value =
+        {value: self.iir, label: self.iirLabel};
+    uiconf.sections[4].content[0].value =
+        {value: self.deemphasis, label:  self.deemphasisLabel};
     defer.resolve(uiconf);
 
     // apply saved configuration data to es9018k2m
@@ -137,7 +144,9 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
   return defer.promise;
 };
 
-ControllerES9018K2M.prototype.updateUIConfig = function(volume, mute, balance, fir, iir, deemphasis) {
+ControllerES9018K2M.prototype.updateUIConfig = function(
+    volume, mute, balance, balanceNote, fir, iir, deemphasis
+) {
   var self=this;
 
   var lang_code = self.commandRouter.sharedVars.get('language_code');
@@ -148,7 +157,7 @@ ControllerES9018K2M.prototype.updateUIConfig = function(volume, mute, balance, f
   {
     if (volume)
       self.configManager.setUIConfigParam(
-          uiconf, 'sections[1].content[0].value', volume
+          uiconf, 'sections[1].content[0].config.bars.value', volume
       );
     if (mute)
       self.configManager.setUIConfigParam(
@@ -156,16 +165,24 @@ ControllerES9018K2M.prototype.updateUIConfig = function(volume, mute, balance, f
       );
     if (balance)
       self.configManager.setUIConfigParam(
-          uiconf, 'sections[2].content[0].value', balance
+          uiconf, 'sections[2].content[0].config.bars.value', balance
       );
-    if (fir)
+    if (balanceNote)
+      self.configManager.setUIConfigParam(
+          uiconf, 'sections[2].content[0].description', balanceNote
+      );
+    if (fir) {
       self.configManager.setUIConfigParam(
           uiconf, 'sections[3].content[0].value', fir
       );
-    if (iir)
+      self.logger.info("ES9018K2M:updateUIConfig:FIR:"+JSON.stringify(fir));
+    }
+    if (iir)  {
       self.configManager.setUIConfigParam(
           uiconf, 'sections[3].content[1].value', iir
       );
+      self.logger.info("ES9018K2M:updateUIConfig:IIR:"+JSON.stringify(iir));
+    }
     if (deemphasis)
       self.configManager.setUIConfigParam(
           uiconf, 'sections[4].content[0].value', deemphasis
@@ -258,9 +275,10 @@ ControllerES9018K2M.prototype.defaultEs9018k2mCtl = function() {
 
   self.defaultEs9018k2m();
   self.updateUIConfig(
-      {value: 20},
-      {value: true},                            // mute
-      {value: 19},                              // balance
+      20,                              // volume
+      true,                            // mute
+      0,                               // balance
+      "balanced",                      // balanced dB
       {label:"Fast FIR (default)", value:1},    // FIR
       {label:"OFF", value:4},                   // IIR
       {label:"OFF", value:0}                    // deemphasis
@@ -716,7 +734,7 @@ ControllerES9018K2M.prototype.unmuteES9018K2m  = function(){
 ControllerES9018K2M.prototype.setBalanceCtl = function(data) {
   var self = this;
 
-  var value = data['balance_adjust'];
+  var value = data['balance_adjust']+19;
   self.logger.info("ControllerES9018K2M::setBalanceCtl:"+value);
 
   self.setBalance(value);
@@ -731,33 +749,44 @@ ControllerES9018K2M.prototype.setBalance = function(value){
   if (value === 19) {         // Mid point
     self.lBal=0;
     self.rBal=0;
-    result = "Balance ";
+    result = "Balanced";
   }
   else {
     if (value > 19) {         // Adjusting balance to right channel
       self.rBal =0;           // No additional attenuation for right channel
       self.lBal =value-19;    // Attenuate left channel
-      result = Math.floor(self.lBal/2).toString();        // Print whole dB value
+      result = "Balance: ";
+      result += Math.floor(self.lBal/2).toString();
       if(self.lBal % 2)
-        result += ".5";       // Print fraction dB value
+        result += ".5";
       else
         result += ".0";
-      result += "Right";
+      result += "dB Right";
     }
     else {                     // Adjusting balance to left channel
       self.lBal=0;             // No additional attenuation for left channel
       self.rBal=19-value;      // Attenuate right channel
-      result = Math.floor(self.rBal/2).toString();    // Print whole dB value
+      result = "Balance: ";
+      result += Math.floor(self.rBal/2).toString();
       if(self.rBal % 2)
-        result += ".5";        // Print fraction dB value
+        result += ".5";
       else
         result += ".0";
-      result += "Left";
+      result += "dB Left";
     }
   }
 
   // Adjust volume based on the current balance settings
   self.setSabreVolume(self.currAttnu);
+  self.updateUIConfig(
+      null,         // volume
+      null,         // mute
+      null,         // balance
+      result,       // balance note
+      null,         // FIR
+      null,         // IIR
+      null          // deemphasis
+  );
 
   self.logger.info("ControllerES9018K2M::setBalance:RESULT:"+result);
 
@@ -770,7 +799,8 @@ ControllerES9018K2M.prototype.resetBalanceCtl = function() {
   self.updateUIConfig(
       null,         // volume
       null,         // mute
-      {value: 19},  // balance
+      0,            // balance
+      "balanced",   // balance note
       null,         // FIR
       null,         // IIR
       null          // deemphasis

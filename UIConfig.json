@@ -120,10 +120,10 @@
             "orientation": "horizontal",
             "bars": [
               {
-                "min": 0,
-                "max": 38,
+                "min": -19,
+                "max": 19,
                 "step": 1,
-                "value": 19,
+                "value": 0,
                 "tooltip":"always"
               }
             ]

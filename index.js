@@ -51,6 +51,7 @@ ControllerES9018K2M.prototype.onStart = function() {
   self.deemphasis =  self.config.get('deemphasis');
   self.deemphasisLabel =  self.config.get('deemphasisLabel');
   self.balance =  self.config.get('balance');
+  self.balanceNote = self.config.get('balanceNote');
   self.i2sDPLL = self.config.get('i2sDPLL');
   self.dsdDPLL = self.config.get('dsdDPLL');
   self.i2sLabelDPLL = self.config.get('i2sLabelDPLL');
@@ -121,12 +122,15 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
 
     uiconf.sections[1].content[0].config.bars[0].value = self.volumeLevel;
     uiconf.sections[1].content[1].value = !self.mute;
+
     uiconf.sections[2].content[0].config.bars[0].value = self.balance;
+    uiconf.sections[2].content[0].description = self.balanceNote;
+
     uiconf.sections[3].content[0].value =
         {value: self.fir, label: self.firLabel};
     uiconf.sections[3].content[1].value =
         {value: self.iir, label: self.iirLabel};
-    uiconf.sections[4].content[0].value =
+    uiconf.sections[3].content[2].value =
         {value: self.deemphasis, label:  self.deemphasisLabel};
     defer.resolve(uiconf);
 
@@ -159,45 +163,47 @@ ControllerES9018K2M.prototype.updateUIConfig = function(
       __dirname + '/UIConfig.json')
   .then(function(uiconf)
   {
-    if (volume)
-      self.configManager.setUIConfigParam(
-          uiconf, 'sections[1].content[0].config.bars[0].value', volume
-      );
-    if (mute)
-      self.configManager.setUIConfigParam(
-        uiconf, 'sections[1].content[1].value', mute
-      );
-    if (balance)
-      self.configManager.setUIConfigParam(
-          uiconf, 'sections[2].content[0].config.bars[0].value', balance
-      );
-    if (balanceNote)
-      self.configManager.setUIConfigParam(
-          uiconf, 'sections[2].content[0].description', balanceNote
-      );
-    if (fir) {
-      self.configManager.setUIConfigParam(
-          uiconf, 'sections[3].content[0].value', fir
-      );
-      self.logger.info("ES9018K2M:updateUIConfig:FIR:"+JSON.stringify(fir));
-    }
-    if (iir)  {
-      self.configManager.setUIConfigParam(
-          uiconf, 'sections[3].content[1].value', iir
-      );
-      self.logger.info("ES9018K2M:updateUIConfig:IIR:"+JSON.stringify(iir));
-    }
-    if (deemphasis)
-      self.configManager.setUIConfigParam(
-          uiconf, 'sections[4].content[0].value', deemphasis
-      );
+    self.configManager.setUIConfigParam(
+        uiconf, 'sections[1].content[0].config.bars[0].value', volume
+    );
+    self.configManager.setUIConfigParam(
+      uiconf, 'sections[1].content[1].value', mute
+    );
 
+    self.configManager.setUIConfigParam(
+        uiconf, 'sections[2].content[0].config.bars[0].value', balance
+    );
+    self.configManager.setUIConfigParam(
+        uiconf, 'sections[2].content[0].description', balanceNote
+    );
+
+    self.configManager.setUIConfigParam(
+        uiconf, 'sections[3].content[0].value', fir
+    );
+    self.configManager.setUIConfigParam(
+        uiconf, 'sections[3].content[1].value', iir
+    );
+    self.configManager.setUIConfigParam(
+        uiconf, 'sections[3].content[2].value', deemphasis
+    );
     self.commandRouter.broadcastMessage('pushUiConfig', uiconf);
   })
   .fail(function()
   {
     new Error();
   });
+};
+
+ControllerES9018K2M.prototype.applyUIConfig = function () {
+  self.updateUIConfig(
+    self.volumeLevel,               // volume
+    !self.mute,                     // mute
+    self.balance,                   // balance
+    self.balanceNote,               // balanced dB
+    {label: self.fir, value: self.fir},           // FIR
+    {label: self.iirLabel, value: self.iir},      // IIR
+    {label: self.deemphasisLabel, value: self.deemphasis} // deemphasis
+  );
 };
 
 ControllerES9018K2M.prototype.loadI18nStrings = function () {
@@ -286,8 +292,8 @@ ControllerES9018K2M.prototype.defaultEs9018k2mCtl = function() {
       0,                               // balance
       "balanced",                      // balanced dB
       {label:"Fast FIR (default)", value:1},    // FIR
-      {label:"OFF", value:4},                   // IIR
-      {label:"OFF", value:0}                    // deemphasis
+      {label:"Off", value:4},                   // IIR
+      {label:"Off", value:0}                    // deemphasis
   );
   self.commandRouter.pushToastMessage('info', self.serviceName, "reset to default");
 };
@@ -777,7 +783,7 @@ ControllerES9018K2M.prototype.setBalanceCtl = function(data) {
   var self = this;
   var value;
 
-  self.balance = data['balance_adjust'];
+  self.balance = parseInt(data['balance_adjust']);
   self.config.set('balance', self.balance);
   value = self.balance+19;
   self.logger.info("ControllerES9018K2M::setBalanceCtl:"+value);
@@ -820,18 +826,11 @@ ControllerES9018K2M.prototype.setBalance = function(value){
       result += "dB Left";
     }
   }
+  set.balanceNote = result;
 
   // Adjust volume based on the current balance settings
   self.setSabreVolume(self.volumeLevel);
-  self.updateUIConfig(
-      null,         // volume
-      null,         // mute
-      null,         // balance
-      result,       // balance note
-      null,         // FIR
-      null,         // IIR
-      null          // deemphasis
-  );
+  self.applyUIConfig();
 
   self.logger.info("ControllerES9018K2M::setBalance:RESULT:"+result);
 
@@ -841,15 +840,9 @@ ControllerES9018K2M.prototype.setBalance = function(value){
 ControllerES9018K2M.prototype.resetBalanceCtl = function() {
   var self = this;
 
-  self.updateUIConfig(
-      null,         // volume
-      null,         // mute
-      0,            // balance
-      "balanced",   // balance note
-      null,         // FIR
-      null,         // IIR
-      null          // deemphasis
-  );
+
+  set.balanceNote = "balanced";
+  self.applyUIConfig();
 
   self.balance = 0;
   self.config.set('balance', self.balance);

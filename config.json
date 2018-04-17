@@ -5,7 +5,7 @@
   },
   "volumeLevel": {
     "type": "number",
-    "value": 3
+    "value": 100
   },
   "mute": {
     "type": "boolean",

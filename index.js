@@ -59,7 +59,7 @@ ControllerES9018K2M.prototype.onStart = function() {
   self.serviceName = "es9018k2m_ctl";
 
   if (self.es9018k2m) {
-    self.defaultEs9018k2m();
+    self.loadDefaultValue();
     self.commandRouter.pushToastMessage('info', self.serviceName, "start es9018k2m");
   }
 
@@ -225,11 +225,12 @@ ControllerES9018K2M.prototype.initEs9018k2m = function()
   self.SABRE_ADDR = 0x48;
   self.lBal = 0;
   self.rBal = 0;
-  self.volumeLevel = 0;
-  self.statusReg = 64;
-  self.SRExact = true;    // exact sample rate value; false = display nominal value
-  self.currAttnu = 0x64;  //-50 dB this is 50x2=100 or 0x64. Sabre32 is 0 to -127dB in .5dB steps
+  self.balance = 0;
 
+  self.SRExact = true;    // exact sample rate value; false = display nominal value
+  self.volumeLevel = 0x64;  //-50 dB this is 50x2=100 or 0x64. Sabre32 is 0 to -127dB in .5dB steps
+
+  self.statusReg = 64;
   self.reg0=0x00;  // System settings. Default value of register 0
   self.reg4=0x00;  // Automute time. Default = disabled
   self.reg5=0x68;  // Automute level. Default is some level, but in reg4 default has automute disabled
@@ -277,9 +278,10 @@ ControllerES9018K2M.prototype.checkES9018k2m = function() {
 ControllerES9018K2M.prototype.defaultEs9018k2mCtl = function() {
   var self = this;
 
-  self.defaultEs9018k2m();
+  self.initEs9018k2m();
+  self.loadDefaultValue();
   self.updateUIConfig(
-      20,                              // volume
+      self.volumeLevel,                // volume
       true,                            // mute
       0,                               // balance
       "balanced",                      // balanced dB
@@ -290,7 +292,7 @@ ControllerES9018K2M.prototype.defaultEs9018k2mCtl = function() {
   self.commandRouter.pushToastMessage('info', self.serviceName, "reset to default");
 };
 
-ControllerES9018K2M.prototype.defaultEs9018k2m = function() {
+ControllerES9018K2M.prototype.loadDefaultValue = function() {
   var self = this;
 
   self.muteES9018K2m();                   // Mute DACs
@@ -302,7 +304,7 @@ ControllerES9018K2M.prototype.defaultEs9018k2m = function() {
   self.writeSabreReg(0x0A, self.reg10);   // Master Mode. Default: OFF
   self.writeSabreReg(0x0E, self.reg14);   // Soft Start Settings
   self.writeSabreReg(0x0B, self.reg11S);  // stereo
-  self.setSabreVolume(self.currAttnu);    // Startup volume level
+  self.setSabreVolume(self.volumeLevel);    // Startup volume level
 
   self.unmuteES9018K2m();
 };
@@ -773,8 +775,11 @@ ControllerES9018K2M.prototype.unmuteES9018K2m  = function(){
 
 ControllerES9018K2M.prototype.setBalanceCtl = function(data) {
   var self = this;
+  var value;
 
-  var value = data['balance_adjust']+19;
+  self.balance = data['balance_adjust'];
+  self.config.set('balance', self.balance);
+  value = self.balance+19;
   self.logger.info("ControllerES9018K2M::setBalanceCtl:"+value);
 
   self.setBalance(value);
@@ -817,7 +822,7 @@ ControllerES9018K2M.prototype.setBalance = function(value){
   }
 
   // Adjust volume based on the current balance settings
-  self.setSabreVolume(self.currAttnu);
+  self.setSabreVolume(self.volumeLevel);
   self.updateUIConfig(
       null,         // volume
       null,         // mute
@@ -846,8 +851,10 @@ ControllerES9018K2M.prototype.resetBalanceCtl = function() {
       null          // deemphasis
   );
 
+  self.balance = 0;
+  self.config.set('balance', self.balance);
   self.setBalance(19);
-  self.setSabreVolume(self.currAttnu);
+  self.setSabreVolume(self.volumeLevel);
 };
 
 ControllerES9018K2M.prototype.readRegister = function(regAddr) {

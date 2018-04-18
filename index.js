@@ -396,85 +396,71 @@ ControllerES9018K2M.prototype.setI2sDPLL = function (selected){
   switch(selected) {
     case 0:
       self.reg12=self.reg12 | 0x00;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL = "Off";
       break;
     case 1:
       self.reg12=self.reg12 | 0x10;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL= "01 (lowest bandwidth)";
       break;
     case 2:
       self.reg12=self.reg12 | 0x20;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL= "02";
       break;
     case 3:
       self.reg12=self.reg12 | 0x30;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL= "03";
       break;
     case 4:
       self.reg12=self.reg12 | 0x40;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL= "04";
       break;
     case 5: // Default setting
       self.reg12=self.reg12 | 0x50;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL= "05 (default)";
       break;
     case 6:
       self.reg12=self.reg12 | 0x60;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL= "06";
       break;
     case 7:
       self.reg12=self.reg12 | 0x70;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL= "07";
       break;
     case 8:
       self.reg12=self.reg12 | 0x80;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL= "08";
       break;
     case 9:
       self.reg12=self.reg12 | 0x90;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL= "09";
       break;
     case 10:
       self.reg12=self.reg12 | 0xA0;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL= "10";
       break;
     case 11:
       self.reg12=self.reg12 | 0xB0;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL= "11";
       break;
     case 12:
       self.reg12=self.reg12 | 0xC0;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL= "12";
       break;
     case 13:
       self.reg12=self.reg12 | 0xD0;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL= "13";
       break;
     case 14:
       self.reg12=self.reg12 | 0xE0;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL= "14";
       break;
     case 15:
       self.reg12=self.reg12 | 0xF0;
-      self.writeSabreReg(0x0C,self.reg12);
       self.i2sLabelDPLL= "15 (highest bandwidth)";
       break;
   }
+  self.logger.info("ControllerES9018K2M::setI2sDPLL:reg12:"+self.reg12);
+  self.writeSabreReg(0x0C, self.reg12);
 
   result += self.i2sLabelDPLL;
   self.commandRouter.pushToastMessage('info', self.serviceName, result);
@@ -492,85 +478,73 @@ ControllerES9018K2M.prototype.setDsdDPLL = function (selected){
   switch (selected) {
     case 0:
       self.reg12=self.reg12 | 0x00;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "Off";
       break;
     case 1:
       self.reg12=self.reg12 | 0x01;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "01 (lowest bandwidth)";
       break;
     case 2:
       self.reg12=self.reg12 | 0x02;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "02";
       break;
     case 3:
       self.reg12=self.reg12 | 0x03;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "03";
       break;
     case 4:
       self.reg12=self.reg12 | 0x04;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "04";
       break;
     case 5:
       self.reg12=self.reg12 | 0x05;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "05";
       break;
     case 6:
       self.reg12=self.reg12 | 0x06;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "06";
       break;
     case 7:
       self.reg12=self.reg12 | 0x07;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "07";
       break;
     case 8:
       self.reg12=self.reg12 | 0x08;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "08";
       break;
     case 9:
       self.reg12=self.reg12 | 0x09;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "09";
       break;
     case 10:
       self.reg12=self.reg12 | 0x0A;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "10 (default)";
       break;
     case 11:
       self.reg12=self.reg12 | 0x0B;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "11";
       break;
     case 12:
       self.reg12=self.reg12 | 0x0C;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "12";
       break;
     case 13:
       self.reg12=self.reg12 | 0x0D;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "13";
       break;
     case 14:
       self.reg12=self.reg12 | 0x0E;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "14";
       break;
     case 15:
       self.reg12=self.reg12 | 0x0F;
-      self.writeSabreReg(0x0C,self.reg12);
       self.dsdLabelDPLL= "15 (highest bandwidth)";
       break;
   }
+
+
+  self.logger.info("ControllerES9018K2M::setDsdDPLL:reg12:"+self.reg12);
+  self.writeSabreReg(0x0C, self.reg12);
   result += self.dsdLabelDPLL;
   self.commandRouter.pushToastMessage('info', self.serviceName, result);
 

@@ -1,27 +1,25 @@
 {
   "PLUGIN_NAME": "es9018k2m 플러그인",
+  "LEFT": "좌측",
+  "RIGHT": "우측",
+  "BALANCE": "밸런스",
+  "MID_BALANCE": "좌/우 동일",
   "I2S_ENABLED": "es9018k2m i2s DAC 활성화됨",
   "I2S_DISABLED": "현재 DAC는 i2c를 지원하는 es9018k2m 이 아닙니다. 플러그인이 상태 제어를 할수 없습니다.",
   "ES9018K2M": {
     "CONFIG": "설정",
-    "APPLY": "반영",
     "SAVE": "저장",
     "BALANCE": "좌/우 밸런스",
     "BALANCE_ADJUST": "밸런스 조정",
     "BALANCE_RESET": "밸런스 초기화",
     "VOLUME": "H/W 볼륨",
-    "VOLUME_SAVE": "볼륨 저장",
+    "MUTE_ON_OFF": "정상/음소거",
     "CHECK_DEVICE": "디바이스 검사",
     "DEFAULT_VALUE": "기본값으로 변경",
     "DIGITAL_FILTER": "디지털 필터",
     "DE_EMPHASIS_FILTER": "Deemphasis 필터",
-    "APPLY_FILTER": "필터 적용",
-    "FIR_FILTER_SELECT": "FIR(선형) 필터",
-    "IIR_FILTER_SELECT": "IIR(비선형) 필터",
-    "DE_EMPHASIS_FILTER_SELECT": "Deemphasis 필터",
-    "MUTE_ON_OFF": "정상/음소거",
-    "DPLL_FILTER": "DPLL(위상고정) 필터",
-    "I2S_DPLL_FILTER": "i2s DPLL 필터",
-    "DSD_DPLL_FILTER": "dsd DPLL 필터"
+    "FIR_FILTER": "FIR(선형) 필터",
+    "IIR_FILTER": "IIR(비선형) 필터",
+    "DPLL": "DPLL(위상고정, 지터제거)"
   }
 }

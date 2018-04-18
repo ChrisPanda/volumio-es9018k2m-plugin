@@ -7,10 +7,6 @@
     "type": "number",
     "value": 100
   },
-  "mute": {
-    "type": "boolean",
-    "value": false
-  },
   "balance": {
     "type": "number",
     "value": 0

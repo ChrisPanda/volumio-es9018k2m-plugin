@@ -40,10 +40,9 @@ ControllerES9018K2M.prototype.onStart = function() {
   
   self.loadI18nStrings();
   self.initEs9018k2m();
-  self.checkES9018k2m();
+  self.checkEs9018k2m();
 
   self.volumeLevel = self.config.get("volumeLevel");
-  self.mute = self.config.get("mute");
   self.fir =  self.config.get('fir');
   self.firLabel =  self.config.get('firLabel');
   self.iir =  self.config.get('iir');
@@ -121,7 +120,7 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
       uiconf.sections[0].description = self.getI18nString('I2S_DISABLED');
 
     uiconf.sections[1].content[0].config.bars[0].value = self.volumeLevel;
-    uiconf.sections[1].content[1].value = !self.mute;
+    uiconf.sections[1].content[1].value = self.ready;
 
     uiconf.sections[2].content[0].config.bars[0].value = self.balance;
     uiconf.sections[2].content[0].description = self.balanceNote;
@@ -132,10 +131,15 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
         {value: self.iir, label: self.iirLabel};
     uiconf.sections[3].content[2].value =
         {value: self.deemphasis, label:  self.deemphasisLabel};
+
+    uiconf.sections[4].content[0].value =
+        {value: self.i2sDPLL, label:  self.i2sLabelDPLL};
+    uiconf.sections[4].content[1].value =
+        {value: self.dsdDPLL, label:  self.dsdLabelDPLL};
     defer.resolve(uiconf);
 
     // apply saved configuration data to es9018k2m
-    if (self.mute)
+    if (self.ready)
       self.unmuteES9018K2m();
     else
       self.muteES9018K2m();
@@ -153,7 +157,7 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
 };
 
 ControllerES9018K2M.prototype.updateUIConfig = function(
-    volume, mute, balance, balanceNote, fir, iir, deemphasis
+    volume, ready, balance, balanceNote, fir, iir, deemphasis, i2sDPLL, dsdDPLL
 ) {
   var self=this;
 
@@ -167,7 +171,7 @@ ControllerES9018K2M.prototype.updateUIConfig = function(
         uiconf, 'sections[1].content[0].config.bars[0].value', volume
     );
     self.configManager.setUIConfigParam(
-      uiconf, 'sections[1].content[1].value', mute
+      uiconf, 'sections[1].content[1].value', ready
     );
 
     self.configManager.setUIConfigParam(
@@ -186,6 +190,14 @@ ControllerES9018K2M.prototype.updateUIConfig = function(
     self.configManager.setUIConfigParam(
         uiconf, 'sections[3].content[2].value', deemphasis
     );
+
+    self.configManager.setUIConfigParam(
+        uiconf, 'sections[4].content[0].value', i2sDPLL
+    );
+    self.configManager.setUIConfigParam(
+        uiconf, 'sections[4].content[1].value', dsdDPLL
+    );
+
     self.commandRouter.broadcastMessage('pushUiConfig', uiconf);
   })
   .fail(function()
@@ -195,14 +207,18 @@ ControllerES9018K2M.prototype.updateUIConfig = function(
 };
 
 ControllerES9018K2M.prototype.applyUIConfig = function () {
+  var self=this;
+
   self.updateUIConfig(
-    self.volumeLevel,               // volume
-    !self.mute,                     // mute
-    self.balance,                   // balance
-    self.balanceNote,               // balanced dB
-    {label: self.fir, value: self.fir},           // FIR
-    {label: self.iirLabel, value: self.iir},      // IIR
-    {label: self.deemphasisLabel, value: self.deemphasis} // deemphasis
+      self.volumeLevel,               // volume
+      self.ready,                     // ready
+      self.balance,                   // balance
+      self.balanceNote,               // balanced dB
+      {label: self.firLabel, value: self.fir},      // FIR
+      {label: self.iirLabel, value: self.iir},      // IIR
+      {label: self.deemphasisLabel, value: self.deemphasis}, // deemphasis
+      {label: self.i2sLabelDPLL, value: self.i2sDPLL},  // i2sDPLL
+      {label: self.dsdLabelDPLL, value: self.dsdDPLL}   // dsdLabelDPLL
   );
 };
 
@@ -232,6 +248,8 @@ ControllerES9018K2M.prototype.initEs9018k2m = function()
   self.lBal = 0;
   self.rBal = 0;
   self.balance = 0;
+  self.ready = true;
+  self.centerBalance = 19;
 
   self.SRExact = true;    // exact sample rate value; false = display nominal value
   self.volumeLevel = 0x64;  //-50 dB this is 50x2=100 or 0x64. Sabre32 is 0 to -127dB in .5dB steps
@@ -243,32 +261,32 @@ ControllerES9018K2M.prototype.initEs9018k2m = function()
   self.reg7=0x80;  // General settings. Default value fast fir, pcm iir and unmuted
   self.reg8=0x81;  // GPIO configuration. GPIO1 set to DPLL Lock; GPIO2 set to input (for SPDIF)
   self.reg10=0x05; // Master Mode Control. Default value: master mode off
-  self.reg12=0x5A; // DPLL Settings. Default= one level above lowest for I2S and two levels above
-  // mid setting for DSD
-  self.reg14=0x8A; // Soft Start Settings
+  self.reg12=0x5A; // DPLL settings.
+          // Default= one level above lowest for I2S
+          //          two levels above mid setting for DSD
+  self.reg14=0x8A; // Soft Start settings
   self.reg21=0x00; // Oversampling filter setting and GPIO settings. Default: oversampling ON
 // reg11 will need a R and V variable in order to support MONO
-  self.reg11S=0x02; // Channel Mapping. "S" means stereo
-  // Default stereo is Ch1=left, Ch2=right
+  self.reg11S=0x02; // Channel Mapping. "S" means stereo(Default stereo is Ch1=left, Ch2=right)
 };
 
-ControllerES9018K2M.prototype.checkES9018k2m = function() {
+ControllerES9018K2M.prototype.checkEs9018k2m = function() {
   var self=this;
   var revision, message;
 
-  self.logger.info("ControllerES9018K2M::checkES9018k2m");
+  self.logger.info("ControllerES9018K2M::checkEs9018k2m");
   self.readRegister(self.statusReg).then (function(chipStatus) {
     if ((chipStatus & 0x1C) === 16) {
       self.es9018k2m = true;
       if (chipStatus & 0x20)
-        revision = 'rev V';
+        revision = 'revision V';
       else
-        revision = 'rev W';
+        revision = 'revision W';
     }
     else
       self.es9018k2m = false;
 
-    self.logger.info("ControllerES9018K2M::checkES9018k2m:" + self.es9018k2m);
+    self.logger.info("ControllerES9018K2M::checkEs9018k2m:" + self.es9018k2m);
     self.logger.info("ControllerES9018K2M::ES9018k2mRevision:"
         + self.es9018k2mRevision);
 
@@ -281,19 +299,21 @@ ControllerES9018K2M.prototype.checkES9018k2m = function() {
   });
 };
 
-ControllerES9018K2M.prototype.defaultEs9018k2mCtl = function() {
+ControllerES9018K2M.prototype.loadDefaultEs9018k2m= function() {
   var self = this;
 
   self.initEs9018k2m();
   self.loadDefaultValue();
   self.updateUIConfig(
       self.volumeLevel,                // volume
-      true,                            // mute
-      0,                               // balance
-      "balanced",                      // balanced dB
+      self.ready,                      // ready
+      self.balance,                    // balance
+      self.getI18nString('MID_BALANCE'),        // balanced string
       {label:"Fast FIR (default)", value:1},    // FIR
       {label:"Off", value:4},                   // IIR
-      {label:"Off", value:0}                    // deemphasis
+      {label:"Off", value:0},                   // deemphasis
+      {label:"05 (default)", value:5},          // i2sDPLL
+      {label:"10  (default)", value:10}         // dsdDPLL
   );
   self.commandRouter.pushToastMessage('info', self.serviceName, "reset to default");
 };
@@ -310,31 +330,33 @@ ControllerES9018K2M.prototype.loadDefaultValue = function() {
   self.writeSabreReg(0x0A, self.reg10);   // Master Mode. Default: OFF
   self.writeSabreReg(0x0E, self.reg14);   // Soft Start Settings
   self.writeSabreReg(0x0B, self.reg11S);  // stereo
-  self.setSabreVolume(self.volumeLevel);    // Startup volume level
+  self.setSabreVolume(self.volumeLevel);  // Startup volume level
 
   self.unmuteES9018K2m();
 };
 
-ControllerES9018K2M.prototype.updateVolume = function(data) {
+ControllerES9018K2M.prototype.execVolumeControl = function(data) {
   var self = this;
+
   var volume = data['volume_adjust'];
-  var mute = data['mute'];
+  var ready = data['ready'];
 
-  self.logger.info("ControllerES9018K2M::updateVolume:"+volume);
-  self.logger.info("ControllerES9018K2M::updateVolume:mute:"+mute);
-
-  self.volumeLevel = parseInt(volume);
-  self.mute = !mute;
+  self.logger.info("ControllerES9018K2M::execVolumeControl:volume:"+volume);
+  self.logger.info("ControllerES9018K2M::execVolumeControl:ready:"+ready);
 
   self.setSabreVolume(self.volumeLevel);
 
-  if (mute)
-    self.unmuteES9018K2m();
-  else
-    self.muteES9018K2m();
+  if (self.ready !== ready) {
+    if (ready)
+      self.unmuteES9018K2m();
+    else
+      self.muteES9018K2m();
+    self.logger.info("ControllerES9018K2M::execVolumeControl:MUTE_CHANGE:"+ready);
+  };
 
+  self.volumeLevel = parseInt(volume);
+  self.ready = ready;
   self.config.set('volumeLevel', self.volumeLevel);
-  self.config.set('mute', self.mute);
 
   self.commandRouter.pushToastMessage('info', self.serviceName, "update Volume done");
 };
@@ -349,24 +371,26 @@ ControllerES9018K2M.prototype.bitclear = function(reg, value) {
   return reg;
 };
 
-ControllerES9018K2M.prototype.setDpllFilterCtl = function (data) {
+ControllerES9018K2M.prototype.execDpllControl = function (data) {
   var self = this;
 
-  var selectedI2sDpll = data['i2s_dpll'].value;
-  var selectedDsdDpll = data['dsd_dpll'].value;
+  var selectedI2sDpll = data['i2sDPLL'].value;
+  var selectedDsdDpll = data['dsdDPLL'].value;
 
-  self.setI2sDPLL(selectedI2sDpll);
-  self.setDsdDPLL(selectedDsdDpll);
+  if (self.i2sDPLL !== selectedI2sDpll)
+    self.setI2sDPLL(selectedI2sDpll);
+
+  if (self.dsdDPLL !== selectedDsdDpll)
+    self.setDsdDPLL(selectedDsdDpll);
 };
 
 
 // Set the DPLL Mode for I2S (upper 4 bits)
 ControllerES9018K2M.prototype.setI2sDPLL = function (selected){
   var self=this;
-  var result = "PCM DPLL: ";
+  var result;
 
-
-  result = "DL: ";
+  result = "PCM DPLL: ";
   self.i2sDPLL = selected;
   self.reg12 = self.reg12 & 0x0F;
   switch(selected) {
@@ -456,17 +480,14 @@ ControllerES9018K2M.prototype.setI2sDPLL = function (selected){
   self.commandRouter.pushToastMessage('info', self.serviceName, result);
   self.config.set('i2sDPLL', self.i2sDPLL);
   self.config.set('i2sLabelDPLL', self.i2sLabelDPLL);
-  return result;
 };
 
 // Set the DPLL Mode for DSD -lower 4 bits
-ControllerES9018K2M.prototype.setDsdDPLL = function (data){
+ControllerES9018K2M.prototype.setDsdDPLL = function (selected){
   var self=this;
   var result = "DSD DPLL: ";
 
-  var selected = data['dsd_dpll'].value;
   self.dsdDPLL = selected;
-
   self.reg12 = self.reg12 & 0xF0;
   switch (selected) {
     case 0:
@@ -555,10 +576,9 @@ ControllerES9018K2M.prototype.setDsdDPLL = function (data){
 
   self.config.set('dsdDPLL', self.dsdDPLL);
   self.config.set('dsdLabelDPLL', self.dsdLabelDPLL);
-  return result;
 };
 
-ControllerES9018K2M.prototype.setDigitalFilterCtl = function(data) {
+ControllerES9018K2M.prototype.execDigitalFilterControl = function(data) {
   var self=this;
 
   var selectedFir = data['fir_filter'].value;
@@ -581,31 +601,31 @@ ControllerES9018K2M.prototype.setFirFilter = function(selected){
   self.fir = selected;
   switch (selected) {
     case 0:                       // Slow FIR
-      self.reg7=self.bitset(self.reg7,5);             // x 0 1 x x x x x
-      self.reg7=self.bitclear(self.reg7,6);           // x 0 1 x x x x x
-      self.reg21=self.bitclear(self.reg21,0);         // Use OSF: x x x x x x x 0
+      self.reg7=self.bitset(self.reg7,5);       // x 0 1 x x x x x
+      self.reg7=self.bitclear(self.reg7,6);     // x 0 1 x x x x x
+      self.reg21=self.bitclear(self.reg21,0);   // Use OSF: x x x x x x x 0
       self.writeSabreReg(0x0E, self.reg7);
       self.writeSabreReg(0x15, self.reg21);
       self.firLabel = "Slow FIR";
       break;
     case 1:                       // Fast FIR (Sharp) -Default
-      self.reg7=self.bitclear(self.reg7,5);           // x 0 0 x x x x x
-      self.reg7=self.bitclear(self.reg7,6);           // x 0 0 x x x x x
-      self.reg21=self.bitclear(self.reg21,0);          // Use OSF: x x x x x x x 0
+      self.reg7=self.bitclear(self.reg7,5);     // x 0 0 x x x x x
+      self.reg7=self.bitclear(self.reg7,6);     // x 0 0 x x x x x
+      self.reg21=self.bitclear(self.reg21,0);   // Use OSF: x x x x x x x 0
       self.writeSabreReg(0x0E, self.reg7);
       self.writeSabreReg(0x15, self.reg21);
       self.firLabel = "Fast FIR (default)";
       break;
     case 2:                       // Minimum phase filter (Sharp)
-      self.reg7=self.bitclear(self.reg7,5);           // x 1 0 x x x x x
-      self.reg7=self.bitset(self.reg7,6);             // x 1 0 x x x x x
-      self.reg21=self.bitclear(self.reg21,0);          // Use OSF: x x x x x x x 0
+      self.reg7=self.bitclear(self.reg7,5);     // x 1 0 x x x x x
+      self.reg7=self.bitset(self.reg7,6);       // x 1 0 x x x x x
+      self.reg21=self.bitclear(self.reg21,0);   // Use OSF: x x x x x x x 0
       self.writeSabreReg(0x0E, self.reg7);
       self.writeSabreReg(0x15, self.reg21);
       self.firLabel = "Minimum phase";
       break;
     case 3:                       // Bypass oversampling filter
-      self.reg21=self.bitset(self.reg21,0);            // Bypass OSF: x x x x x x x 1
+      self.reg21=self.bitset(self.reg21,0);    // Bypass OSF: x x x x x x x 1
       self.writeSabreReg(0x15, self.reg21);
       self.firLabel = "Bypass oversampling";
       break;
@@ -726,7 +746,6 @@ ControllerES9018K2M.prototype.setDeemphasisFilter = function(selected) {
   self.commandRouter.pushToastMessage('info', self.serviceName, result);
 
   self.logger.info("ControllerES9018K2M::setDeemphasisFilter:RESULT:"+result);
-  return result;
 };
 
 // toggle function for selecting SR display format
@@ -745,6 +764,7 @@ ControllerES9018K2M.prototype.setSRFormat = function () {
 ControllerES9018K2M.prototype.setSabreVolume = function(regVal) {
   var self=this;
 
+  regVal = 255 - regVal;
   self.logger.info("ControllerES9018K2M::setSabreVolume:"+regVal);
   //self.writeSabreLeftReg(15, regVal+self.lBal); // set up volume in Channel 1 (Left)
   //self.writeSabreLeftReg(16, regVal+self.rBal); // set up volume in Channel 2 (Right)
@@ -779,14 +799,14 @@ ControllerES9018K2M.prototype.unmuteES9018K2m  = function(){
   left channel (0~38 value range)
 */
 
-ControllerES9018K2M.prototype.setBalanceCtl = function(data) {
+ControllerES9018K2M.prototype.execBalanceControl = function(data) {
   var self = this;
   var value;
 
   self.balance = parseInt(data['balance_adjust']);
   self.config.set('balance', self.balance);
-  value = self.balance+19;
-  self.logger.info("ControllerES9018K2M::setBalanceCtl:"+value);
+  value = self.balance + self.centerBalance;
+  self.logger.info("ControllerES9018K2M::execBalanceControl:"+value);
 
   self.setBalance(value);
 };
@@ -797,57 +817,50 @@ ControllerES9018K2M.prototype.setBalance = function(value){
 
   self.logger.info("ControllerES9018K2M::setBalance:"+value);
 
-  if (value === 19) {         // Mid point
+  if (value === self.centerBalance) {         // Mid point
     self.lBal=0;
     self.rBal=0;
-    result = "Balanced";
+    result = self.getI18nString('MID_BALANCE');
   }
   else {
-    if (value > 19) {         // Adjusting balance to right channel
-      self.rBal =0;           // No additional attenuation for right channel
-      self.lBal =value-19;    // Attenuate left channel
-      result = "Balance: ";
+    result = self.getI18nString('BALANCE') + ": ";
+    if (value > self.centerBalance) {         // Adjusting balance to right channel
+      self.rBal =0;                           // No additional attenuation for right channel
+      self.lBal =value-self.centerBalance;    // Attenuate left channel
       result += Math.floor(self.lBal/2).toString();
       if(self.lBal % 2)
         result += ".5";
       else
         result += ".0";
-      result += "dB Right";
+      result += "dB " + self.getI18nString('RIGHT');
     }
     else {                     // Adjusting balance to left channel
       self.lBal=0;             // No additional attenuation for left channel
-      self.rBal=19-value;      // Attenuate right channel
-      result = "Balance: ";
+      self.rBal=self.centerBalance-value;      // Attenuate right channel
       result += Math.floor(self.rBal/2).toString();
       if(self.rBal % 2)
         result += ".5";
       else
         result += ".0";
-      result += "dB Left";
+      result += "dB "+ self.getI18nString('LEFT');
     }
   }
-  set.balanceNote = result;
+  self.balanceNote = result;
 
   // Adjust volume based on the current balance settings
   self.setSabreVolume(self.volumeLevel);
   self.applyUIConfig();
 
   self.logger.info("ControllerES9018K2M::setBalance:RESULT:"+result);
-
-  return result;
 };
 
 ControllerES9018K2M.prototype.resetBalanceCtl = function() {
   var self = this;
 
-
-  set.balanceNote = "balanced";
-  self.applyUIConfig();
-
+  self.balanceNote = self.getI18nString('MID_BALANCE');
   self.balance = 0;
-  self.config.set('balance', self.balance);
-  self.setBalance(19);
-  self.setSabreVolume(self.volumeLevel);
+  self.setBalance(self.centerBalance);
+  self.applyUIConfig();
 };
 
 ControllerES9018K2M.prototype.readRegister = function(regAddr) {

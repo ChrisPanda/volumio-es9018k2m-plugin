@@ -1,25 +1,25 @@
 {
   "page": {
-    "label": "TRANSLATE.ES9018K2M.CONFIG"
+    "label": "TRANSLATE.UI.CONFIG"
   },
   "sections": [
     {
-      "id": "device_check",
+      "id": "device_control",
       "element": "section",
-      "label": "TRANSLATE.ES9018K2M.CHECK_DEVICE",
+      "label": "TRANSLATE.UI.CHECK_DEVICE",
       "icon": "fa-cogs",
       "description": "",
       "content": [
         {
           "id": "check_device",
           "element": "button",
-          "label": "TRANSLATE.ES9018K2M.CHECK_DEVICE",
+          "label": "TRANSLATE.UI.CHECK_DEVICE",
           "onClick": {
             "type": "emit",
             "message": "callMethod",
             "data": {
               "endpoint": "miscellanea/es9018k2m_ctl",
-              "method": "checkES9018k2m",
+              "method": "checkEs9018k2m",
               "data": ""
             }
           }
@@ -27,13 +27,13 @@
         {
           "id": "init_device",
           "element": "button",
-          "label": "TRANSLATE.ES9018K2M.DEFAULT_VALUE",
+          "label": "TRANSLATE.UI.DEFAULT_VALUE",
           "onClick": {
             "type": "emit",
             "message": "callMethod",
             "data": {
               "endpoint": "miscellanea/es9018k2m_ctl",
-              "method": "defaultEs9018k2mCtl",
+              "method": "loadDefaultEs9018k2m",
               "data": ""
             }
           }
@@ -43,49 +43,49 @@
     {
       "id": "volume_control",
       "element": "section",
-      "label": "TRANSLATE.ES9018K2M.VOLUME",
+      "label": "TRANSLATE.UI.VOLUME",
       "icon": "fa-cogs",
       "onSave": {
         "type": "controller",
         "endpoint":"miscellanea/es9018k2m_ctl",
-        "method":"updateVolume"
+        "method":"execVolumeControl"
       },
       "saveButton": {
-        "label": "TRANSLATE.ES9018K2M.VOLUME_SAVE",
+        "label": "TRANSLATE.UI.SAVE",
         "data": [
-          "volume_adjust", "mute"
+          "volume_adjust", "ready"
         ]
       },
       "content": [
         {
           "id": "volume_adjust",
           "element": "equalizer",
-          "label": "TRANSLATE.ES9018K2M.VOLUME",
+          "label": "TRANSLATE.UI.VOLUME",
           "description": "",
           "config": {
             "orientation": "horizontal",
             "bars": [
               {
                 "min": 0,
-                "max": 100,
+                "max": 255,
                 "step": 1,
-                "value": 20,
+                "value": 100,
                 "tooltip":"always"
               }
             ]
           }
         },
         {
-          "id": "mute",
+          "id": "ready",
           "element": "switch",
-          "label": "TRANSLATE.ES9018K2M.MUTE_ON_OFF",
+          "label": "TRANSLATE.UI.MUTE_ON_OFF",
           "onClick": {
             "type": "emit",
             "message": "callMethod",
             "data": {
               "endpoint": "miscellanea/es9018k2m_ctl",
               "method": "setMuteOnOff",
-              "data": ["mute"]
+              "data": ["ready"]
             }
           },
           "value": true
@@ -94,18 +94,18 @@
     },
 
     {
-      "id": "balance",
+      "id": "balance_control",
       "element": "section",
-      "label": "TRANSLATE.ES9018K2M.BALANCE",
+      "label": "TRANSLATE.UI.BALANCE",
       "icon": "fa-cogs",
-      "description": "",
+      "description": "balance menu",
       "onSave": {
         "type": "controller",
         "endpoint":"miscellanea/es9018k2m_ctl",
-        "method":"setBalanceCtl"
+        "method":"execBalanceControl"
       },
       "saveButton": {
-        "label": "TRANSLATE.ES9018K2M.APPLY",
+        "label": "TRANSLATE.UI.SAVE",
         "data": [
           "balance_adjust"
         ]
@@ -114,7 +114,7 @@
         {
           "id": "balance_adjust",
           "element": "equalizer",
-          "label": "TRANSLATE.ES9018K2M.BALANCE_ADJUST",
+          "label": "TRANSLATE.UI.BALANCE_ADJUST",
           "description": "",
           "config": {
             "orientation": "horizontal",
@@ -132,7 +132,7 @@
         {
           "id": "balance_reset",
           "element": "button",
-          "label": "TRANSLATE.ES9018K2M.BALANCE_RESET",
+          "label": "TRANSLATE.UI.BALANCE_RESET",
           "onClick": {
             "type": "emit",
             "message": "callMethod",
@@ -147,17 +147,18 @@
     },
 
     {
-      "id": "fir_iir_filter_ctl",
+      "id": "digital_filter_control",
       "element": "section",
-      "label": "TRANSLATE.ES9018K2M.DIGITAL_FILTER",
+      "label": "TRANSLATE.UI.DIGITAL_FILTER",
       "icon": "fa-cogs",
+      "description": "FIR, IIR, deemphasis_filter",
       "onSave": {
         "type": "controller",
         "endpoint": "miscellanea/es9018k2m_ctl",
-        "method": "setDigitalFilterCtl"
+        "method": "execDigitalFilterControl"
       },
       "saveButton": {
-        "label": "TRANSLATE.ES9018K2M.APPLY_FILTER",
+        "label": "TRANSLATE.UI.SAVE",
         "data": [
           "fir_filter", "iir_filter", "deemphasis_filter"
         ]
@@ -167,7 +168,7 @@
           "id": "fir_filter",
           "type": "number",
           "element": "select",
-          "label": "TRANSLATE.ES9018K2M.FIR_FILTER_SELECT",
+          "label": "TRANSLATE.UI.FIR_FILTER",
           "description": "",
           "value": {
             "value": 1,
@@ -196,7 +197,7 @@
           "id": "iir_filter",
           "type": "number",
           "element": "select",
-          "label": "TRANSLATE.ES9018K2M.IIR_FILTER_SELECT",
+          "label": "TRANSLATE.UI.IIR_FILTER",
           "description": "",
           "value": {
             "value": 4,
@@ -229,7 +230,7 @@
           "id": "deemphasis_filter",
           "type": "number",
           "element": "select",
-          "label": "TRANSLATE.ES9018K2M.DE_EMPHASIS_FILTER_SELECT",
+          "label": "TRANSLATE.UI.DE_EMPHASIS_FILTER",
           "description": "",
           "value": {
             "value": 0,
@@ -266,31 +267,32 @@
     },
 
     {
-      "id": "dpll_filter_ctl",
+      "id": "dpll_jitter_control",
       "element": "section",
-      "label": "TRANSLATE.ES9018K2M.DPLL_FILTER",
+      "label": "TRANSLATE.UI.DPLL",
       "icon": "fa-cogs",
+      "description": "The DPLL has adjustable bandwidth and  it is used for jitter reduction. the usable lowest bandwidth setting is one where no dropouts occur",
       "onSave": {
         "type": "controller",
         "endpoint": "miscellanea/es9018k2m_ctl",
-        "method": "setDpllFilterCtl"
+        "method": "execDpllControl"
       },
       "saveButton": {
-        "label": "TRANSLATE.ES9018K2M.APPLY_FILTER",
+        "label": "TRANSLATE.UI.SAVE",
         "data": [
-          "i2sDPLL_filter",  "dsdDPLL_filter"
+          "i2sDPLL",  "dsdDPLL"
         ]
       },
       "content": [
         {
-          "id": "i2sDPLL_filter",
+          "id": "i2sDPLL",
           "type": "number",
           "element": "select",
-          "label": "TRANSLATE.ES9018K2M.I2S_DPLL_FILTER",
+          "label": "i2s",
           "description": "",
           "value": {
-            "value": 0,
-            "label": "Off"
+            "value": 5,
+            "label": "05 (default)"
           },
           "options": [
             {
@@ -360,14 +362,14 @@
           ]
         },
         {
-          "id": "dsdDPLL_filter",
+          "id": "dsdDPLL",
           "type": "number",
           "element": "select",
-          "label": "TRANSLATE.ES9018K2M.DSD_DPLL_FILTER",
+          "label": "DSD",
           "description": "",
           "value": {
-            "value": 0,
-            "label": "Off"
+            "value": 10,
+            "label": "10 (default)"
           },
           "options": [
             {
@@ -412,7 +414,7 @@
             },
             {
               "value": 10,
-              "label": "10  (default)"
+              "label": "10 (default)"
             },
             {
               "value": 11,

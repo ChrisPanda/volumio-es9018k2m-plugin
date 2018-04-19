@@ -43,6 +43,7 @@ ControllerES9018K2M.prototype.onStart = function() {
   self.checkEs9018k2m();
 
   self.volumeLevel = self.config.get("volumeLevel");
+  self.ready = self.config.get("ready");
   self.fir =  self.config.get('fir');
   self.firLabel =  self.config.get('firLabel');
   self.iir =  self.config.get('iir');
@@ -347,11 +348,9 @@ ControllerES9018K2M.prototype.execVolumeControl = function(data) {
   self.logger.info("ControllerES9018K2M::execVolumeControl:ready:"+ready);
 
   self.setVolume(volume);
-  self.volumeLevel = volume;
-  self.ready = ready;
-  self.config.set('volumeLevel', volume);
 
   if (self.ready !== ready) {
+    self.ready = ready;
     if (ready)
       self.unmuteES9018K2m();
     else
@@ -359,6 +358,9 @@ ControllerES9018K2M.prototype.execVolumeControl = function(data) {
     self.logger.info("ControllerES9018K2M::execVolumeControl:MUTE_CHANGE:"+ready);
     self.commandRouter.pushToastMessage('info', self.serviceName, "mute on/off: "+ready);
   };
+
+  self.volumeLevel = volume;
+  self.config.set('volumeLevel', volume);
 
   self.commandRouter.pushToastMessage('info', self.serviceName, "update Volume done");
 };
@@ -592,8 +594,11 @@ ControllerES9018K2M.prototype.setSRFormat = function () {
 ControllerES9018K2M.prototype.setVolume = function(regVal) {
   var self=this;
 
-  var value = 255 - regVal;
+  //var value = 255 - regVal;
+  var value = regVal;
   self.logger.info("ControllerES9018K2M::setVolume:"+value);
+  self.logger.info("ControllerES9018K2M::setVolumeLBAL:"+self.lBal);
+  self.logger.info("ControllerES9018K2M::setVolumeRBAL:"+self.rBal);
   self.writeRegister(15, value + self.lBal); // set up volume in Channel 1 (Left)
   self.writeRegister(16, value + self.rBal); // set up volume in Channel 1 (Right)
 };

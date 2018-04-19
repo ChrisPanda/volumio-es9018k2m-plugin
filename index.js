@@ -277,6 +277,7 @@ ControllerES9018K2M.prototype.checkEs9018k2m = function() {
   self.readRegister(self.statusReg).then (function(chipStatus) {
     if ((chipStatus & 0x1C) === 16) {
       self.es9018k2m = true;
+      self.logger.info("ControllerES9018K2M::checkEs9018k2m:chipStatus:" + chipStatus);
       if (chipStatus & 0x20)
         revision = 'revision V';
       else
@@ -337,17 +338,18 @@ ControllerES9018K2M.prototype.loadDefaultValue = function() {
 ControllerES9018K2M.prototype.execVolumeControl = function(data) {
   var self = this;
 
+  self.logger.info("ControllerES9018K2M::execVolumeControl:volume TYPE:"+typeof data['volume_adjust']);
   var volume = parseInt(data['volume_adjust']);
   var ready = data['ready'];
+  self.logger.info("ControllerES9018K2M::execVolumeControl:volume VAL TYPE:"+typeof volume);
 
-  self.logger.info("ControllerES9018K2M::execVolumeControl:volume TYPE:"+typeof data['volume_adjust']);
   self.logger.info("ControllerES9018K2M::execVolumeControl:volume:"+volume);
   self.logger.info("ControllerES9018K2M::execVolumeControl:ready:"+ready);
 
-  self.setVolume(self.volumeLevel);
-  self.volumeLevel = parseInt(volume);
+  self.setVolume(volume);
+  self.volumeLevel = volume;
   self.ready = ready;
-  self.config.set('volumeLevel', self.volumeLevel);
+  self.config.set('volumeLevel', volume);
 
   if (self.ready !== ready) {
     if (ready)
@@ -378,6 +380,7 @@ ControllerES9018K2M.prototype.execDpllControl = function (data) {
   var selectedDsdDpll = data['dsdDPLL'].value;
 
   self.logger.info("ControllerES9018K2M::execDpllControl:i2sDPLL TYPE:"+typeof selectedI2sDpll);
+  self.logger.info("ControllerES9018K2M::execDpllControl:i2sDPLL:"+ selectedI2sDpll);
 
   if (self.i2sDPLL !== selectedI2sDpll) {
     var selectedLabelI2sDpll = data['i2sDPLL'].label;
@@ -397,8 +400,8 @@ ControllerES9018K2M.prototype.setI2sDPLL = function (value, label) {
   result = "i2s DPLL: " + label;
   self.i2sDPLL = value;
   self.i2sLabelDPLL = label;
-  self.reg12 = self.reg12 & 0x0F;
-
+  self.reg12 &= 0x0F;
+  self.reg12 |= value;
   self.logger.info("ControllerES9018K2M::setI2sDPLL:reg12:"+self.reg12);
   self.writeRegister(0x0C, self.reg12);
 
@@ -415,7 +418,8 @@ ControllerES9018K2M.prototype.setDsdDPLL = function (value, label){
   result = "DSD DPLL: " + label;
   self.dsdDPLL = value;
   self.dsdLabelDPLL= label;
-  self.reg12 = self.reg12 & 0xF0;
+  self.reg12 &= 0xF0;
+  self.reg12 |= value;
 
   self.logger.info("ControllerES9018K2M::setDsdDPLL:reg12:"+self.reg12);
   self.writeRegister(0x0C, self.reg12);

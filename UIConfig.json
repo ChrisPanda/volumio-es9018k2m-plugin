@@ -67,9 +67,9 @@
             "bars": [
               {
                 "min": 0,
-                "max": 255,
+                "max": 100,
                 "step": 1,
-                "value": 100,
+                "value": 60,
                 "tooltip":"always"
               }
             ]
@@ -332,7 +332,7 @@
               "label": "09"
             },
             {
-              "value": 160,`
+              "value": 160,
               "label": "10"
             },
             {

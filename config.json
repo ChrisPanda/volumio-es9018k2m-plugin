@@ -5,7 +5,7 @@
   },
   "volumeLevel": {
     "type": "number",
-    "value": 100
+    "value": 60
   },
   "balance": {
     "type": "number",

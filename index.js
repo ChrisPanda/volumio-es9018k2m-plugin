@@ -253,7 +253,7 @@ ControllerES9018K2M.prototype.initEs9018k2m = function()
   self.centerBalance = 29;
 
   self.SRExact = true;    // exact sample rate value; false = display nominal value
-  self.volumeLevel = 0x64;  //-50 dB this is 50x2=100 or 0x64. Sabre32 is 0 to -127dB in .5dB steps
+  self.volumeLevel = 60;  //0x64 -50 dB this is 50x2=100 or 0x64. Sabre32 is 0 to -127dB in .5dB steps
 
   self.statusReg = 64;
   self.reg0=0x00;  // System settings. Default value of register 0
@@ -594,8 +594,7 @@ ControllerES9018K2M.prototype.setSRFormat = function () {
 ControllerES9018K2M.prototype.setVolume = function(regVal) {
   var self=this;
 
-  //var value = 255 - regVal;
-  var value = regVal;
+  var value = 100 - regVal;
   self.logger.info("ControllerES9018K2M::setVolume:"+value);
   self.logger.info("ControllerES9018K2M::setVolumeLBAL:"+self.lBal);
   self.logger.info("ControllerES9018K2M::setVolumeRBAL:"+self.rBal);

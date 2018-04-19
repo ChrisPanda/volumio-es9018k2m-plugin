@@ -249,7 +249,7 @@ ControllerES9018K2M.prototype.initEs9018k2m = function()
   self.rBal = 0;
   self.balance = 0;
   self.ready = true;
-  self.centerBalance = 19;
+  self.centerBalance = 29;
 
   self.SRExact = true;    // exact sample rate value; false = display nominal value
   self.volumeLevel = 0x64;  //-50 dB this is 50x2=100 or 0x64. Sabre32 is 0 to -127dB in .5dB steps
@@ -260,14 +260,13 @@ ControllerES9018K2M.prototype.initEs9018k2m = function()
   self.reg5=0x68;  // Automute level. Default is some level, but in reg4 default has automute disabled
   self.reg7=0x80;  // General settings. Default value fast fir, pcm iir and unmuted
   self.reg8=0x81;  // GPIO configuration. GPIO1 set to DPLL Lock; GPIO2 set to input (for SPDIF)
-  self.reg10=0x05; // Master Mode Control. Default value: master mode off
+  self.reg9=0x00;  // Master Mode Control. Default value: master mode off
   self.reg12=0x5A; // DPLL settings.
           // Default= one level above lowest for I2S
           //          two levels above mid setting for DSD
   self.reg14=0x8A; // Soft Start settings
   self.reg21=0x00; // Oversampling filter setting and GPIO settings. Default: oversampling ON
-// reg11 will need a R and V variable in order to support MONO
-  self.reg11S=0x02; // Channel Mapping. "S" means stereo(Default stereo is Ch1=left, Ch2=right)
+  self.reg11=0x02; // Channel Mapping. (Default stereo is Ch1=left, Ch2=right)
 };
 
 ControllerES9018K2M.prototype.checkEs9018k2m = function() {
@@ -310,10 +309,10 @@ ControllerES9018K2M.prototype.loadDefaultEs9018k2m= function() {
       self.balance,                    // balance
       self.getI18nString('MID_BALANCE'),        // balanced string
       {label:"Fast FIR (default)", value:1},    // FIR
-      {label:"Off", value:4},                   // IIR
-      {label:"Off", value:0},                   // deemphasis
-      {label:"05 (default)", value:5},          // i2sDPLL
-      {label:"10  (default)", value:10}         // dsdDPLL
+      {label:"47K", value: 0},                  // IIR
+      {label:"Off", value: 66},                 // deemphasis
+      {label:"05 (default)", value:80},         // i2sDPLL
+      {label:"10 (default)", value:10}          // dsdDPLL
   );
   self.commandRouter.pushToastMessage('info', self.serviceName, "reset to default");
 };
@@ -322,15 +321,15 @@ ControllerES9018K2M.prototype.loadDefaultValue = function() {
   var self = this;
 
   self.muteES9018K2m();                   // Mute DACs
-  self.muteES9018K2m();                   // Redundant mute DACs
-  self.writeSabreReg(0x00, self.reg0);    // System Settings
-  self.writeSabreReg(0x04, self.reg4);    // Automute
-  self.writeSabreReg(0x05, self.reg5);    // Automute Level
-  self.writeSabreReg(0x08, self.reg8);    // GPIO default configuration
-  self.writeSabreReg(0x0A, self.reg10);   // Master Mode. Default: OFF
-  self.writeSabreReg(0x0E, self.reg14);   // Soft Start Settings
-  self.writeSabreReg(0x0B, self.reg11S);  // stereo
-  self.setSabreVolume(self.volumeLevel);  // Startup volume level
+  //self.muteES9018K2m();                 // Redundant mute DACs
+  self.writeRegister(0, self.reg0);    // System Settings
+  self.writeRegister(4, self.reg4);    // Automute
+  self.writeRegister(5, self.reg5);    // Automute Level
+  //self.writeRegister(8, self.reg8);  // GPIO default configuration
+  //self.writeRegister(9, self.reg9);  // Master Mode. Default: OFF
+  self.writeRegister(14, self.reg14);  // Soft Start Settings
+  self.writeRegister(11, self.reg11);  // stereo
+  self.setVolume(self.volumeLevel);    // Startup volume level
 
   self.unmuteES9018K2m();
 };
@@ -338,13 +337,17 @@ ControllerES9018K2M.prototype.loadDefaultValue = function() {
 ControllerES9018K2M.prototype.execVolumeControl = function(data) {
   var self = this;
 
-  var volume = data['volume_adjust'];
+  var volume = parseInt(data['volume_adjust']);
   var ready = data['ready'];
 
+  self.logger.info("ControllerES9018K2M::execVolumeControl:volume TYPE:"+typeof data['volume_adjust']);
   self.logger.info("ControllerES9018K2M::execVolumeControl:volume:"+volume);
   self.logger.info("ControllerES9018K2M::execVolumeControl:ready:"+ready);
 
-  self.setSabreVolume(self.volumeLevel);
+  self.setVolume(self.volumeLevel);
+  self.volumeLevel = parseInt(volume);
+  self.ready = ready;
+  self.config.set('volumeLevel', self.volumeLevel);
 
   if (self.ready !== ready) {
     if (ready)
@@ -352,11 +355,8 @@ ControllerES9018K2M.prototype.execVolumeControl = function(data) {
     else
       self.muteES9018K2m();
     self.logger.info("ControllerES9018K2M::execVolumeControl:MUTE_CHANGE:"+ready);
+    self.commandRouter.pushToastMessage('info', self.serviceName, "mute on/off: "+ready);
   };
-
-  self.volumeLevel = parseInt(volume);
-  self.ready = ready;
-  self.config.set('volumeLevel', self.volumeLevel);
 
   self.commandRouter.pushToastMessage('info', self.serviceName, "update Volume done");
 };
@@ -377,177 +377,50 @@ ControllerES9018K2M.prototype.execDpllControl = function (data) {
   var selectedI2sDpll = data['i2sDPLL'].value;
   var selectedDsdDpll = data['dsdDPLL'].value;
 
-  if (self.i2sDPLL !== selectedI2sDpll)
-    self.setI2sDPLL(selectedI2sDpll);
+  self.logger.info("ControllerES9018K2M::execDpllControl:i2sDPLL TYPE:"+typeof selectedI2sDpll);
 
-  if (self.dsdDPLL !== selectedDsdDpll)
-    self.setDsdDPLL(selectedDsdDpll);
+  if (self.i2sDPLL !== selectedI2sDpll) {
+    var selectedLabelI2sDpll = data['i2sDPLL'].label;
+    self.setI2sDPLL(selectedI2sDpll, selectedLabelI2sDpll);
+  }
+  if (self.dsdDPLL !== selectedDsdDpll) {
+    var selectedLabelDsdDpll = data['dsdDPLL'].label;
+    self.setDsdDPLL(selectedDsdDpll, selectedLabelDsdDpll);
+  }
 };
 
-
-// Set the DPLL Mode for I2S (upper 4 bits)
-ControllerES9018K2M.prototype.setI2sDPLL = function (selected){
+// DPLL Mode for I2S - upper 4 bits
+ControllerES9018K2M.prototype.setI2sDPLL = function (value, label) {
   var self=this;
   var result;
 
-  result = "PCM DPLL: ";
-  self.i2sDPLL = selected;
+  result = "i2s DPLL: " + label;
+  self.i2sDPLL = value;
+  self.i2sLabelDPLL = label;
   self.reg12 = self.reg12 & 0x0F;
-  switch(selected) {
-    case 0:
-      self.reg12=self.reg12 | 0x00;
-      self.i2sLabelDPLL = "Off";
-      break;
-    case 1:
-      self.reg12=self.reg12 | 0x10;
-      self.i2sLabelDPLL= "01 (lowest bandwidth)";
-      break;
-    case 2:
-      self.reg12=self.reg12 | 0x20;
-      self.i2sLabelDPLL= "02";
-      break;
-    case 3:
-      self.reg12=self.reg12 | 0x30;
-      self.i2sLabelDPLL= "03";
-      break;
-    case 4:
-      self.reg12=self.reg12 | 0x40;
-      self.i2sLabelDPLL= "04";
-      break;
-    case 5: // Default setting
-      self.reg12=self.reg12 | 0x50;
-      self.i2sLabelDPLL= "05 (default)";
-      break;
-    case 6:
-      self.reg12=self.reg12 | 0x60;
-      self.i2sLabelDPLL= "06";
-      break;
-    case 7:
-      self.reg12=self.reg12 | 0x70;
-      self.i2sLabelDPLL= "07";
-      break;
-    case 8:
-      self.reg12=self.reg12 | 0x80;
-      self.i2sLabelDPLL= "08";
-      break;
-    case 9:
-      self.reg12=self.reg12 | 0x90;
-      self.i2sLabelDPLL= "09";
-      break;
-    case 10:
-      self.reg12=self.reg12 | 0xA0;
-      self.i2sLabelDPLL= "10";
-      break;
-    case 11:
-      self.reg12=self.reg12 | 0xB0;
-      self.i2sLabelDPLL= "11";
-      break;
-    case 12:
-      self.reg12=self.reg12 | 0xC0;
-      self.i2sLabelDPLL= "12";
-      break;
-    case 13:
-      self.reg12=self.reg12 | 0xD0;
-      self.i2sLabelDPLL= "13";
-      break;
-    case 14:
-      self.reg12=self.reg12 | 0xE0;
-      self.i2sLabelDPLL= "14";
-      break;
-    case 15:
-      self.reg12=self.reg12 | 0xF0;
-      self.i2sLabelDPLL= "15 (highest bandwidth)";
-      break;
-  }
-  self.logger.info("ControllerES9018K2M::setI2sDPLL:reg12:"+self.reg12);
-  self.writeSabreReg(0x0C, self.reg12);
 
-  result += self.i2sLabelDPLL;
+  self.logger.info("ControllerES9018K2M::setI2sDPLL:reg12:"+self.reg12);
+  self.writeRegister(0x0C, self.reg12);
+
   self.commandRouter.pushToastMessage('info', self.serviceName, result);
   self.config.set('i2sDPLL', self.i2sDPLL);
   self.config.set('i2sLabelDPLL', self.i2sLabelDPLL);
 };
 
-// Set the DPLL Mode for DSD -lower 4 bits
-ControllerES9018K2M.prototype.setDsdDPLL = function (selected){
+// DPLL Mode for DSD -lower 4 bits
+ControllerES9018K2M.prototype.setDsdDPLL = function (value, label){
   var self=this;
-  var result = "DSD DPLL: ";
+  var result;
 
-  self.dsdDPLL = selected;
+  result = "DSD DPLL: " + label;
+  self.dsdDPLL = value;
+  self.dsdLabelDPLL= label;
   self.reg12 = self.reg12 & 0xF0;
-  switch (selected) {
-    case 0:
-      self.reg12=self.reg12 | 0x00;
-      self.dsdLabelDPLL= "Off";
-      break;
-    case 1:
-      self.reg12=self.reg12 | 0x01;
-      self.dsdLabelDPLL= "01 (lowest bandwidth)";
-      break;
-    case 2:
-      self.reg12=self.reg12 | 0x02;
-      self.dsdLabelDPLL= "02";
-      break;
-    case 3:
-      self.reg12=self.reg12 | 0x03;
-      self.dsdLabelDPLL= "03";
-      break;
-    case 4:
-      self.reg12=self.reg12 | 0x04;
-      self.dsdLabelDPLL= "04";
-      break;
-    case 5:
-      self.reg12=self.reg12 | 0x05;
-      self.dsdLabelDPLL= "05";
-      break;
-    case 6:
-      self.reg12=self.reg12 | 0x06;
-      self.dsdLabelDPLL= "06";
-      break;
-    case 7:
-      self.reg12=self.reg12 | 0x07;
-      self.dsdLabelDPLL= "07";
-      break;
-    case 8:
-      self.reg12=self.reg12 | 0x08;
-      self.dsdLabelDPLL= "08";
-      break;
-    case 9:
-      self.reg12=self.reg12 | 0x09;
-      self.dsdLabelDPLL= "09";
-      break;
-    case 10:
-      self.reg12=self.reg12 | 0x0A;
-      self.dsdLabelDPLL= "10 (default)";
-      break;
-    case 11:
-      self.reg12=self.reg12 | 0x0B;
-      self.dsdLabelDPLL= "11";
-      break;
-    case 12:
-      self.reg12=self.reg12 | 0x0C;
-      self.dsdLabelDPLL= "12";
-      break;
-    case 13:
-      self.reg12=self.reg12 | 0x0D;
-      self.dsdLabelDPLL= "13";
-      break;
-    case 14:
-      self.reg12=self.reg12 | 0x0E;
-      self.dsdLabelDPLL= "14";
-      break;
-    case 15:
-      self.reg12=self.reg12 | 0x0F;
-      self.dsdLabelDPLL= "15 (highest bandwidth)";
-      break;
-  }
-
 
   self.logger.info("ControllerES9018K2M::setDsdDPLL:reg12:"+self.reg12);
-  self.writeSabreReg(0x0C, self.reg12);
-  result += self.dsdLabelDPLL;
-  self.commandRouter.pushToastMessage('info', self.serviceName, result);
+  self.writeRegister(0x0C, self.reg12);
 
+  self.commandRouter.pushToastMessage('info', self.serviceName, result);
   self.config.set('dsdDPLL', self.dsdDPLL);
   self.config.set('dsdLabelDPLL', self.dsdLabelDPLL);
 };
@@ -578,29 +451,29 @@ ControllerES9018K2M.prototype.setFirFilter = function(selected){
       self.reg7=self.bitset(self.reg7,5);       // x 0 1 x x x x x
       self.reg7=self.bitclear(self.reg7,6);     // x 0 1 x x x x x
       self.reg21=self.bitclear(self.reg21,0);   // Use OSF: x x x x x x x 0
-      self.writeSabreReg(0x0E, self.reg7);
-      self.writeSabreReg(0x15, self.reg21);
-      self.firLabel = "Slow FIR";
+      self.writeRegister(7, self.reg7);
+      //self.writeRegister(21, self.reg21);
+      self.firLabel = "Slow Rolloff";
       break;
     case 1:                       // Fast FIR (Sharp) -Default
       self.reg7=self.bitclear(self.reg7,5);     // x 0 0 x x x x x
       self.reg7=self.bitclear(self.reg7,6);     // x 0 0 x x x x x
-      self.reg21=self.bitclear(self.reg21,0);   // Use OSF: x x x x x x x 0
-      self.writeSabreReg(0x0E, self.reg7);
-      self.writeSabreReg(0x15, self.reg21);
-      self.firLabel = "Fast FIR (default)";
+      //self.reg21=self.bitclear(self.reg21,0);   // Use OSF: x x x x x x x 0
+      self.writeRegister(7, self.reg7);
+      //self.writeRegister(21, self.reg21);
+      self.firLabel = "Fast Rolloff (default)";
       break;
     case 2:                       // Minimum phase filter (Sharp)
       self.reg7=self.bitclear(self.reg7,5);     // x 1 0 x x x x x
       self.reg7=self.bitset(self.reg7,6);       // x 1 0 x x x x x
-      self.reg21=self.bitclear(self.reg21,0);   // Use OSF: x x x x x x x 0
-      self.writeSabreReg(0x0E, self.reg7);
-      self.writeSabreReg(0x15, self.reg21);
+      //self.reg21=self.bitclear(self.reg21,0);   // Use OSF: x x x x x x x 0
+      self.writeRegister(7, self.reg7);
+      self.writeRegister(0x15, self.reg21);
       self.firLabel = "Minimum phase";
       break;
     case 3:                       // Bypass oversampling filter
       self.reg21=self.bitset(self.reg21,0);    // Bypass OSF: x x x x x x x 1
-      self.writeSabreReg(0x15, self.reg21);
+      self.writeRegister(0x15, self.reg21);
       self.firLabel = "Bypass oversampling";
       break;
   }
@@ -625,37 +498,37 @@ ControllerES9018K2M.prototype.setIirFilter = function(selected){
       self.reg7=self.bitclear(self.reg7,2);     // x x x x 0 0 x x
       self.reg7=self.bitclear(self.reg7,3);
       self.reg21=self.bitclear(self.reg21,2);   // Use IIR: x x x x x 0 x x
-      self.writeSabreReg(0x0E, self.reg7);
-      self.writeSabreReg(0x15, self.reg21);
-      self.iirLabel = "47K PCM";
+      self.writeRegister(7, self.reg7);
+      //self.writeRegister(21, self.reg21);
+      self.iirLabel = "47K";
       break;
     case 1:                        // IIR Bandwidth: 50k (for DSD) (D)
       self.reg7=self.bitset(self.reg7,2);     // x x x x 0 1 x x
       self.reg7=self.bitclear(self.reg7,3);
       self.reg21=self.bitclear(self.reg21,2);  // Use IIR: x x x x x 0 x x
-      self.writeSabreReg(0x0E, self.reg7);
-      self.writeSabreReg(0x15, self.reg21);
-      self.iirLabel = "50K DSD";
+      self.writeRegister(7, self.reg7);
+      //self.writeRegister(21, self.reg21);
+      self.iirLabel = "50K";
       break;
     case 2:                        // IIR Bandwidth: 60k (for DSD)
       self.reg7=self.bitset(self.reg7,3);     // x x x x 1 0 x x
       self.reg7=self.bitclear(self.reg7,2);
       self.reg21=self.bitclear(self.reg21,2); // Use IIR: x x x x x 0 x x
-      self.writeSabreReg(0x0E, self.reg7);
-      self.writeSabreReg(0x15, self.reg21);
-      self.iirLabel = "60K DSD";
+      self.writeRegister(7, self.reg7);
+      //self.writeRegister(21, self.reg21);
+      self.iirLabel = "60K";
       break;
     case 3:                        // IIR Bandwidth: 70k (for DSD)
       self.reg7=self.bitset(self.reg7,2);     // x x x x 1 1 x x
       self.reg7=self.bitset(self.reg7,3);
       self.reg21=self.bitclear(self.reg21,2); // Use IIR: x x x x x 0 x x
-      self.writeSabreReg(0x0E, self.reg7);
-      self.writeSabreReg(0x15, self.reg21);
-      self.iirLabel = "70K DSD";
+      self.writeRegister(7, self.reg7);
+      //self.writeRegister(21, self.reg21);
+      self.iirLabel = "70K";
       break;
     case 4:                        // IIR OFF
       self.reg21=self.bitset(self.reg21,2);   // Bypass IIR: x x x x x 1 x x
-      self.writeSabreReg(0x15, self.reg21);
+      self.writeRegister(21, self.reg21);
       self.iirLabel = "OFF";
       break;
   }
@@ -671,52 +544,29 @@ ControllerES9018K2M.prototype.setIirFilter = function(selected){
 ControllerES9018K2M.prototype.setDeemphasisFilterCtl = function(data) {
   var self=this;
 
-  var selected = data['deemphasis_filter'].value;
-  self.logger.info("ControllerES9018K2M::setDeemphasisFilterCtl:"+selected);
+  var value = data['deemphasis_filter'].value;
+  var label = data['deemphasis_filter'].label;
+  self.logger.info("ControllerES9018K2M::setDeemphasisFilterCtl:"+value);
 
-  self.setDeemphasisFilter(selected);
+  self.setDeemphasisFilter(value, label);
 };
 
-ControllerES9018K2M.prototype.setDeemphasisFilter = function(selected) {
+ControllerES9018K2M.prototype.setDeemphasisFilter = function(value, label) {
   var self=this;
   var result;
 
-  self.logger.info("ControllerES9018K2M::setDeemphasisFilter:"+selected);
+  self.logger.info("ControllerES9018K2M::setDeemphasisFilter:"+value);
 
-  result = "Deemphasis: ";
+  result = "Deemphasis: " + label;
 
-  self.deemphasis = selected;
-  switch(selected){
-    case 0:       // OFF: 0 1 0 0 1 0 1 0 = 0x4A
-      self.writeSabreReg(0x06,0x4A);
-      self.deemphasisLabel = "OFF";
-      break;
-    case 1:       // AUTO: 1 0 0 0 1 0 1 0 = 0x8A
-      self.writeSabreReg(0x06,0x8A);
-      self.deemphasisLabel = "Auto in SPDIF";
-      break;
-    case 2:       // MANUAL 32K: 0 0 0 0 1 0 1 0 = 0x0A
-      self.writeSabreReg(0x06,0x0A);
-      self.deemphasisLabel = "32K";
-      break;
-    case 3:       // MANUAL 44K: 0 0 0 1 1 0 1 0 = 0x1A
-      self.writeSabreReg(0x06,0x1A);
-      self.deemphasisLabel = "44K";
-      break;
-    case 4:       // MANUAL 48K: 0 0 1 0 1 0 1 0 = 0x2A
-      self.writeSabreReg(0x06,0x2A);
-      self.deemphasisLabel = "48K";
-      break;
-    case 5:       // MANUAL RESERVED: 0 0 1 1 1 0 1 0 = 0x3A
-      self.writeSabreReg(0x06,0x3A);
-      self.deemphasisLabel = "Reserved";
-      break;
-      result += self.deemphasisLabel;
-  }
+  self.deemphasis = value;
+  self.deemphasisLabel = label;
+
+  // off:0x4A, auto: 0x8A, 32K:0x0A, 44k:0x1A, 48k:0x2a, reserved: 0x3A
+  self.writeRegister(6, value);
 
   self.config.set('deemphasis', self.deemphasis);
   self.config.set('deemphasisLabel', self.deemphasisLabel);
-
   self.commandRouter.pushToastMessage('info', self.serviceName, result);
 
   self.logger.info("ControllerES9018K2M::setDeemphasisFilter:RESULT:"+result);
@@ -735,15 +585,13 @@ ControllerES9018K2M.prototype.setSRFormat = function () {
 };
 
 // lBal and rBal are for adjusting for Balance for left and right channels
-ControllerES9018K2M.prototype.setSabreVolume = function(regVal) {
+ControllerES9018K2M.prototype.setVolume = function(regVal) {
   var self=this;
 
-  regVal = 255 - regVal;
-  self.logger.info("ControllerES9018K2M::setSabreVolume:"+regVal);
-  //self.writeSabreLeftReg(15, regVal+self.lBal); // set up volume in Channel 1 (Left)
-  //self.writeSabreLeftReg(16, regVal+self.rBal); // set up volume in Channel 2 (Right)
-  self.writeSabreReg(15, regVal+self.lBal); // set up volume in Channel 1 (Left)
-  self.writeSabreReg(16, regVal+self.rBal); // set up volume in Channel 1 (Right)
+  var value = 255 - regVal;
+  self.logger.info("ControllerES9018K2M::setVolume:"+value);
+  self.writeRegister(15, value + self.lBal); // set up volume in Channel 1 (Left)
+  self.writeRegister(16, value + self.rBal); // set up volume in Channel 1 (Right)
 };
 
 ControllerES9018K2M.prototype.muteES9018K2m  = function(){
@@ -751,7 +599,7 @@ ControllerES9018K2M.prototype.muteES9018K2m  = function(){
 
   self.reg7=self.bitset(self.reg7, 0);               // Mute Channel 1
   self.reg7=self.bitset(self.reg7, 1);               // Mute Channel 2
-  self.writeSabreReg(0x07, self.reg7);
+  self.writeRegister(7, self.reg7);
 };
 
 ControllerES9018K2M.prototype.unmuteES9018K2m  = function(){
@@ -759,20 +607,14 @@ ControllerES9018K2M.prototype.unmuteES9018K2m  = function(){
 
   self.reg7=self.bitclear(self.reg7, 0);             // Unmute Channel 1
   self.reg7=self.bitclear(self.reg7, 1);             // Unmute Channel 2
-  self.writeSabreReg(0x07, self.reg7);
+  self.writeRegister(7, self.reg7);
 };
 
 /*
   Adjusting Balance. The balance can be adjusted up to 9.5 dB to the right
   channel or to the left channel. The limit of 9.5 dB is just so that the value
-  fits in the display. In theory you can completely turn-off one or the other
-  channel. The way it works is to increase the attenuation of one channel or
-  the other channel. If the Balance is to the right channel (turning the knob
-  clockwise), then the display will indicate how many dBs is the left channel
-  attenuated - or how much louder is the right channel compared with the
-  left channel (0~38 value range)
+  fits in the display.
 */
-
 ControllerES9018K2M.prototype.execBalanceControl = function(data) {
   var self = this;
   var value;
@@ -798,31 +640,25 @@ ControllerES9018K2M.prototype.setBalance = function(value){
   }
   else {
     result = self.getI18nString('BALANCE') + ": ";
-    if (value > self.centerBalance) {         // Adjusting balance to right channel
-      self.rBal =0;                           // No additional attenuation for right channel
-      self.lBal =value-self.centerBalance;    // Attenuate left channel
-      result += Math.floor(self.lBal/2).toString();
-      if(self.lBal % 2)
-        result += ".5";
-      else
-        result += ".0";
+    if (value > self.centerBalance) {
+      // adjusting balance to right channel
+      self.rBal =0;
+      self.lBal =value - self.centerBalance;    // Attenuate left channel
+      result += (self.lBal/2).toString();
       result += "dB " + self.getI18nString('RIGHT');
     }
-    else {                     // Adjusting balance to left channel
-      self.lBal=0;             // No additional attenuation for left channel
-      self.rBal=self.centerBalance-value;      // Attenuate right channel
-      result += Math.floor(self.rBal/2).toString();
-      if(self.rBal % 2)
-        result += ".5";
-      else
-        result += ".0";
+    else {
+      // adjusting balance to left channel
+      self.lBal=0;
+      self.rBal=self.centerBalance - value;      // Attenuate right channel
+      result += (self.rBal/2).toString();
       result += "dB "+ self.getI18nString('LEFT');
     }
   }
   self.balanceNote = result;
 
-  // Adjust volume based on the current balance settings
-  self.setSabreVolume(self.volumeLevel);
+  // Adjust volume
+  self.setVolume(self.volumeLevel);
   self.applyUIConfig();
 
   self.logger.info("ControllerES9018K2M::setBalance:RESULT:"+result);
@@ -841,6 +677,19 @@ ControllerES9018K2M.prototype.readRegister = function(regAddr) {
   var self=this;
   var defer = libQ.defer();
 
+  try {
+    var wire = new i2c(self.SABRE_ADDR, {device: '/dev/i2c-1'});
+    wire.writeByte(regAddr, function(err) {
+      self.logger.info("ControllerES9018K2M::readRegister:Write:"+  JSON.stringify(err));
+    });
+    wire.readByte(function(err, res) {
+      self.logger.info("ControllerES9018K2M::readRegister:Read:"+ res);
+      defer.resolve(res);
+    });
+  }
+  catch (e) {
+    self.logger.info("ControllerES9018K2M::readRegister:ERROR:"+  JSON.stringify(e));
+  }
   /*
   try {
     var buffer = new Buffer(1);
@@ -855,31 +704,17 @@ ControllerES9018K2M.prototype.readRegister = function(regAddr) {
   }
   i2c1.closeSync();
   */
-  try {
-    var wire = new i2c(self.SABRE_ADDR, {device: '/dev/i2c-1'});
-    wire.writeByte(regAddr, function(err) {
-      self.logger.info("ControllerES9018K2M::readRegister:Write:"+  JSON.stringify(err));
-    });
-    wire.readByte(function(err, res) {
-      self.logger.info("ControllerES9018K2M::readRegister:Read:"+ res);
-      defer.resolve(res);
-    });
-  }
-  catch (e) {
-    self.logger.info("ControllerES9018K2M::readRegister:ERROR:"+  JSON.stringify(e));
-  }
 
   return defer.promise;
 };
 
-// CONTROLLING THE DIGITAL ATTENUATION (VOLUME)
-ControllerES9018K2M.prototype.writeSabreLeftReg = function (regAddr, regVal) {
+ControllerES9018K2M.prototype.writeRegister = function(regAddr, regVal) {
   var self=this;
 
+  self.logger.info("ControllerES9018K2M::writeRegister:"+regVal);
   var wire = new i2c(self.SABRE_ADDR, {device: '/dev/i2c-1'});
-  self.logger.info("ControllerES9018K2M::writeSabreLeftReg:"+regVal);
   wire.writeBytes(regAddr, [regVal], function(err) {
-    self.logger.info("ControllerES9018K2M::writeSabreLeftReg:DONE:"+  JSON.stringify(err));
+    self.logger.info("ControllerES9018K2M::writeRegister:DONE:"+  JSON.stringify(err));
   });
   /*
   wire.writeByte(regAddr, function(err) {
@@ -892,16 +727,7 @@ ControllerES9018K2M.prototype.writeSabreLeftReg = function (regAddr, regVal) {
   var i2c1 = i2cOrg.openSync(1);
   i2c1.i2cWriteSync(self.SABRE_ADDR, regAddr, regVal);
   i2c1.closeSync();
-    */
-};
-
-// The following routine writes to both chips in dual mono mode. With some exceptions, one only needs
-// to set one of the chips to be the right channel after all registers are modified.
-ControllerES9018K2M.prototype.writeSabreReg = function(regAddr, regVal) {
-  var self=this;
-
-  // By default the chip with addres 0x48 is the left channel
-  self.writeSabreLeftReg(regAddr, regVal);
+  */
 };
 
 ///////////////////////NOT USED //////////////////////////////////////

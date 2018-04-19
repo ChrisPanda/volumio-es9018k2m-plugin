@@ -120,8 +120,8 @@
             "orientation": "horizontal",
             "bars": [
               {
-                "min": -19,
-                "max": 19,
+                "min": -29,
+                "max": 29,
                 "step": 1,
                 "value": 0,
                 "tooltip":"always"
@@ -200,25 +200,25 @@
           "label": "TRANSLATE.UI.IIR_FILTER",
           "description": "",
           "value": {
-            "value": 4,
-            "label": "OFF"
+            "value": 0,
+            "label": "47K"
           },
           "options": [
             {
               "value": 0,
-              "label": "47K PCM"
+              "label": "47K"
             },
             {
               "value": 1,
-              "label": "50K DSD"
+              "label": "50K"
             },
             {
               "value": 2,
-              "label": "60K DSD"
+              "label": "60K"
             },
             {
               "value": 3,
-              "label": "70K DSD"
+              "label": "70K"
             },
             {
               "value": 4,
@@ -233,32 +233,28 @@
           "label": "TRANSLATE.UI.DE_EMPHASIS_FILTER",
           "description": "",
           "value": {
-            "value": 0,
-            "label": "OFF"
+            "value": 66,
+            "label": "Off"
           },
           "options": [
             {
-              "value": 0,
-              "label": "OFF"
+              "value": 66,
+              "label": "Off"
             },
             {
-              "value": 1,
-              "label": "Auto in SPDIF"
-            },
-            {
-              "value": 2,
+              "value": 10,
               "label": "32K"
             },
             {
-              "value": 3,
+              "value": 26,
               "label": "44K"
             },
             {
-              "value": 4,
+              "value": 42,
               "label": "48K"
             },
             {
-              "value": 5,
+              "value": 58,
               "label": "Reserved"
             }
           ]
@@ -291,7 +287,7 @@
           "label": "i2s",
           "description": "",
           "value": {
-            "value": 5,
+            "value": 80,
             "label": "05 (default)"
           },
           "options": [
@@ -300,63 +296,63 @@
               "label": "Off"
             },
             {
-              "value": 1,
+              "value": 16,
               "label": "01 (lowest bandwidth)"
             },
             {
-              "value": 2,
+              "value": 32,
               "label": "02"
             },
             {
-              "value": 3,
+              "value": 48,
               "label": "03"
             },
             {
-              "value": 4,
+              "value": 64,
               "label": "04"
             },
             {
-              "value": 5,
+              "value": 80,
               "label": "05 (default)"
             },
             {
-              "value": 6,
+              "value": 96,
               "label": "06"
             },
             {
-              "value": 7,
+              "value": 112,
               "label": "07"
             },
             {
-              "value": 8,
+              "value": 128,
               "label": "08"
             },
             {
-              "value": 9,
+              "value": 144,
               "label": "09"
             },
             {
-              "value": 10,
+              "value": 160,
               "label": "10"
             },
             {
-              "value": 11,
+              "value": 176,
               "label": "11"
             },
             {
-              "value": 12,
+              "value": 192,
               "label": "12"
             },
             {
-              "value": 13,
+              "value": 208,
               "label": "13"
             },
             {
-              "value": 14,
+              "value": 224,
               "label": "14"
             },
             {
-              "value": 15,
+              "value": 240,
               "label": "15 (highest bandwidth)"
             }
           ]

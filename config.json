@@ -25,23 +25,23 @@
   },
   "iir": {
     "type": "number",
-    "value": 4
+    "value": 0
   },
   "iirLabel": {
     "type": "string",
-    "value": "OFF"
+    "value": "47K"
   },
   "deemphasis": {
     "type": "number",
-    "value": 0
+    "value": 66
   },
   "deemphasisLabel": {
     "type": "string",
-    "value": "OFF"
+    "value": "Off"
   },
   "i2sDPLL": {
     "type": "number",
-    "value": 5
+    "value": 80
   },
   "i2sLabelDPLL": {
     "type": "string",

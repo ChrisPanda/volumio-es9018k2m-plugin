@@ -146,7 +146,7 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
       self.muteES9018K2m();
     self.setFirFilter(self.fir);
     self.setIirFilter(self.iir);
-    self.setDeemphasisFilter(self.deemphasis);
+    self.setDeemphasisFilter(self.deemphasis, self.deemphasisLabel);
 
   })
   .fail(function()
@@ -440,8 +440,10 @@ ControllerES9018K2M.prototype.execDigitalFilterControl = function(data) {
 
   if (self.fir !== selectedFir) self.setFirFilter(selectedFir);
   if (self.iir !== selectedIir) self.setIirFilter(selectedIir);
-  if (self.deemphasis !== selectedDeemphasis)
-    self.setDeemphasisFilter(selectedDeemphasis);
+  if (self.deemphasis !== selectedDeemphasis) {
+    var deemphasisLabel = data['deemphasis_filter'].label;
+    self.setDeemphasisFilter(selectedDeemphasis, deemphasisLabel);
+  }
 };
 
 ControllerES9018K2M.prototype.setFirFilter = function(selected){

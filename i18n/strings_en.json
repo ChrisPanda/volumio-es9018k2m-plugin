@@ -18,8 +18,8 @@
     "DEFAULT_VALUE": "Load default value",
     "DIGITAL_FILTER": "Digital Filter",
     "DE_EMPHASIS_FILTER": "Deemphasis Filter",
-    "FIR_FILTER": "FIR(Finite Impulse Response) Filter",
-    "IIR_FILTER": "IIR(Infinite  Impulse Response) Filter",
+    "FIR_FILTER": "FIR(Finite Impulse Response)",
+    "IIR_FILTER": "IIR(Infinite  Impulse Response)",
     "DPLL": "DPLL(Digital Phase Locked Loop) Jitter Reduction"
   }
 }

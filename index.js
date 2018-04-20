@@ -39,23 +39,10 @@ ControllerES9018K2M.prototype.onStart = function() {
   var self = this;
   
   self.loadI18nStrings();
-  self.initEs9018k2m();
-  self.checkEs9018k2m();
-
-  self.volumeLevel = self.config.get("volumeLevel");
-  self.ready = self.config.get("ready");
-  self.fir =  self.config.get('fir');
-  self.firLabel =  self.config.get('firLabel');
-  self.iir =  self.config.get('iir');
-  self.iirLabel =  self.config.get('iirLabel');
-  self.deemphasis =  self.config.get('deemphasis');
-  self.deemphasisLabel =  self.config.get('deemphasisLabel');
-  self.balance =  self.config.get('balance');
-  self.balanceNote = self.config.get('balanceNote');
-  self.i2sDPLL = self.config.get('i2sDPLL');
-  self.dsdDPLL = self.config.get('dsdDPLL');
-  self.i2sLabelDPLL = self.config.get('i2sLabelDPLL');
-  self.dsdLabelDPLL = self.config.get('dsdLabelDPLL');
+  self.initVariables();
+  self.initRegister();
+  self.execDeviceCheckControl();
+  self.loadConfig();
 
   self.serviceName = "es9018k2m_ctl";
 
@@ -102,6 +89,46 @@ ControllerES9018K2M.prototype.setUIConfig = function(data) {
   return libQ.resolve();
 };
 
+ControllerES9018K2M.prototype.loadConfig = function() {
+  var self = this;
+
+  self.volumeLevel = self.config.get("volumeLevel");
+  self.balance = self.config.get('balance');
+  self.balanceNote = self.config.get('balanceNote');
+
+  self.fir = self.config.get('fir');
+  self.firLabel = self.config.get('firLabel');
+  self.iir = self.config.get('iir');
+  self.iirLabel = self.config.get('iirLabel');
+  self.deemphasis = self.config.get('deemphasis');
+  self.deemphasisLabel = self.config.get('deemphasisLabel');
+
+  self.i2sDPLL = self.config.get('i2sDPLL');
+  self.dsdDPLL = self.config.get('dsdDPLL');
+  self.i2sLabelDPLL = self.config.get('i2sLabelDPLL');
+  self.dsdLabelDPLL = self.config.get('dsdLabelDPLL');
+};
+
+ControllerES9018K2M.prototype.saveConfig = function() {
+  var self = this;
+
+  self.config.set('volumeLevel', self.volumeLevel);
+  self.config.set('balance', self.balance);
+  self.config.set('balanceNote', self.balanceNote);
+
+  self.config.set('fir', self.fir);
+  self.config.set('firLabel', self.firLabel);
+  self.config.set('iir', self.iir);
+  self.config.set('iirLabel', self.iirLabel);
+  self.config.set('deemphasis', self.deemphasis);
+  self.config.set('deemphasisLabel', self.deemphasisLabel);
+
+  self.config.set('i2sDPLL', self.i2sDPLL);
+  self.config.set('i2sLabelDPLL', self.i2sLabelDPLL);
+  self.config.set('dsdDPLL', self.dsdDPLL);
+  self.config.set('dsdLabelDPLL', self.dsdLabelDPLL);
+};
+
 ControllerES9018K2M.prototype.getUIConfig = function() {
   var self = this;
   var defer = libQ.defer();
@@ -134,20 +161,13 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
         {value: self.deemphasis, label:  self.deemphasisLabel};
 
     uiconf.sections[4].content[0].value =
-        {value: self.i2sDPLL, label:  self.i2sLabelDPLL};
+        {value: self.i2sDPLL, label: self.i2sLabelDPLL};
     uiconf.sections[4].content[1].value =
-        {value: self.dsdDPLL, label:  self.dsdLabelDPLL};
+        {value: self.dsdDPLL, label: self.dsdLabelDPLL};
     defer.resolve(uiconf);
 
     // apply saved configuration data to es9018k2m
-    if (self.ready)
-      self.unmuteES9018K2m();
-    else
-      self.muteES9018K2m();
-    self.setFirFilter(self.fir);
-    self.setIirFilter(self.iir);
-    self.setDeemphasisFilter(self.deemphasis, self.deemphasisLabel);
-
+    self.applyFunction();
   })
   .fail(function()
   {
@@ -241,19 +261,38 @@ ControllerES9018K2M.prototype.getI18nString = function (key) {
 };
 
 // ES9018K2M I2C Controll Methods ------------------------------------------
-ControllerES9018K2M.prototype.initEs9018k2m = function()
+
+ControllerES9018K2M.prototype.initVariables = function() {
+  var self=this;
+
+  self.ready = true;
+  self.volumeLevel = 70;
+
+  self.fir = 1;
+  self.firLabel = "Fast FIR (default)";
+  self.iir = 0;
+  self.iirLabel = "47K";
+  self.deemphasis = 66;
+  self.deemphasisLabel = "Off";
+
+  self.i2sDPLL = 80;
+  self.i2sLabelDPLL = "05 (default)";
+  self.dsdDPLL = 10;
+  self.dsdLabelDPLL = "10 (default)";
+
+  self.lBal = 0;
+  self.rBal = 0;
+  self.balance = 0;
+  self.balanceNote = self.getI18nString('MID_BALANCE');
+  self.centerBalance = 29;
+};
+
+ControllerES9018K2M.prototype.initRegister = function()
 {
   var self = this;
 
   self.SABRE_ADDR = 0x48;
-  self.lBal = 0;
-  self.rBal = 0;
-  self.balance = 0;
-  self.ready = true;
-  self.centerBalance = 29;
-
   self.SRExact = true;    // exact sample rate value; false = display nominal value
-  self.volumeLevel = 60;  //0x64 -50 dB this is 50x2=100 or 0x64. Sabre32 is 0 to -127dB in .5dB steps
 
   self.statusReg = 64;
   self.reg0=0x00;  // System settings. Default value of register 0
@@ -268,55 +307,6 @@ ControllerES9018K2M.prototype.initEs9018k2m = function()
   self.reg14=0x8A; // Soft Start settings
   self.reg21=0x00; // Oversampling filter setting and GPIO settings. Default: oversampling ON
   self.reg11=0x02; // Channel Mapping. (Default stereo is Ch1=left, Ch2=right)
-};
-
-ControllerES9018K2M.prototype.checkEs9018k2m = function() {
-  var self=this;
-  var revision, message;
-
-  self.logger.info("ControllerES9018K2M::checkEs9018k2m");
-  self.readRegister(self.statusReg).then (function(chipStatus) {
-    if ((chipStatus & 0x1C) === 16) {
-      self.es9018k2m = true;
-      self.logger.info("ControllerES9018K2M::checkEs9018k2m:chipStatus:" + chipStatus);
-      if (chipStatus & 0x20)
-        revision = 'revision V';
-      else
-        revision = 'revision W';
-    }
-    else
-      self.es9018k2m = false;
-
-    self.logger.info("ControllerES9018K2M::checkEs9018k2m:" + self.es9018k2m);
-    self.logger.info("ControllerES9018K2M::ES9018k2mRevision:"
-        + self.es9018k2mRevision);
-
-    if (self.es9018k2m)
-      message = "Found: es9018k2m " + revision;
-    else
-      message = "No Found: es9018k2m i2s";
-
-    self.commandRouter.pushToastMessage('info', self.serviceName, message);
-  });
-};
-
-ControllerES9018K2M.prototype.loadDefaultEs9018k2m= function() {
-  var self = this;
-
-  self.initEs9018k2m();
-  self.loadDefaultValue();
-  self.updateUIConfig(
-      self.volumeLevel,                // volume
-      self.ready,                      // ready
-      self.balance,                    // balance
-      self.getI18nString('MID_BALANCE'),        // balanced string
-      {label:"Fast FIR (default)", value:1},    // FIR
-      {label:"47K", value: 0},                  // IIR
-      {label:"Off", value: 66},                 // deemphasis
-      {label:"05 (default)", value:80},         // i2sDPLL
-      {label:"10 (default)", value:10}          // dsdDPLL
-  );
-  self.commandRouter.pushToastMessage('info', self.serviceName, "reset to default");
 };
 
 ControllerES9018K2M.prototype.loadDefaultValue = function() {
@@ -336,19 +326,75 @@ ControllerES9018K2M.prototype.loadDefaultValue = function() {
   self.unmuteES9018K2m();
 };
 
+ControllerES9018K2M.prototype.execDeviceCheckControl = function() {
+  var self=this;
+  var revision, message;
+
+  self.logger.info("ControllerES9018K2M::execDeviceCheckControl");
+  self.readRegister(self.statusReg).then (function(chipStatus) {
+    if ((chipStatus & 0x1C) === 16) {
+      self.es9018k2m = true;
+      self.logger.info("ControllerES9018K2M::execDeviceCheckControl:chipStatus:" + chipStatus);
+      if (chipStatus & 0x20)
+        revision = 'revision V';
+      else
+        revision = 'revision W';
+    }
+    else
+      self.es9018k2m = false;
+
+    self.logger.info("ControllerES9018K2M::execDeviceCheckControl:" + self.es9018k2m);
+    self.logger.info("ControllerES9018K2M::ES9018k2mRevision:"
+        + self.es9018k2mRevision);
+
+    if (self.es9018k2m)
+      message = "Found: es9018k2m " + revision;
+    else
+      message = "No Found: es9018k2m i2s";
+
+    self.commandRouter.pushToastMessage('info', self.serviceName, message);
+  });
+};
+
+ControllerES9018K2M.prototype.applyFunction = function() {
+  var self = this;
+
+  self.setBalance(self.balance);
+
+  self.setFirFilter(self.fir);
+  self.setIirFilter(self.iir);
+  self.setDeemphasisFilter(self.deemphasis, self.deemphasisLabel);
+
+  self.setI2sDPLL(self.i2sDPLL, self.i2sLabelDPLL);
+  self.setDsdDPLL(self.dsdDPLL, self.dsdLabelDPLL);
+
+  self.unmuteES9018K2m();
+};
+
+ControllerES9018K2M.prototype.execLoadDefaultControl= function() {
+  var self = this;
+
+  self.initVariables();
+  self.initRegister();
+  self.loadDefaultValue();
+  self.applyFunction();
+  self.applyUIConfig();
+  self.saveConfig();
+
+  self.commandRouter.pushToastMessage('info', self.serviceName, "reset to default");
+};
+
 ControllerES9018K2M.prototype.execVolumeControl = function(data) {
   var self = this;
 
   self.logger.info("ControllerES9018K2M::execVolumeControl:volume TYPE:"+typeof data['volume_adjust']);
   var volume = parseInt(data['volume_adjust']);
   var ready = data['ready'];
-  self.logger.info("ControllerES9018K2M::execVolumeControl:volume VAL TYPE:"+typeof volume);
 
   self.logger.info("ControllerES9018K2M::execVolumeControl:volume:"+volume);
   self.logger.info("ControllerES9018K2M::execVolumeControl:ready:"+ready);
 
   self.setVolume(volume);
-
   if (self.ready !== ready) {
     self.ready = ready;
     if (ready)
@@ -394,7 +440,7 @@ ControllerES9018K2M.prototype.execDpllControl = function (data) {
   }
 };
 
-// DPLL Mode for I2S - upper 4 bits
+// DPLL Mode for I2S - upper 4 bits of register 12
 ControllerES9018K2M.prototype.setI2sDPLL = function (value, label) {
   var self=this;
   var result;
@@ -412,7 +458,7 @@ ControllerES9018K2M.prototype.setI2sDPLL = function (value, label) {
   self.config.set('i2sLabelDPLL', self.i2sLabelDPLL);
 };
 
-// DPLL Mode for DSD -lower 4 bits
+// DPLL Mode for DSD -lower 4 bits of register 12
 ControllerES9018K2M.prototype.setDsdDPLL = function (value, label){
   var self=this;
   var result;

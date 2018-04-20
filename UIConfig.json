@@ -19,7 +19,7 @@
             "message": "callMethod",
             "data": {
               "endpoint": "miscellanea/es9018k2m_ctl",
-              "method": "checkEs9018k2m",
+              "method": "execDeviceCheckControl",
               "data": ""
             }
           }
@@ -33,7 +33,7 @@
             "message": "callMethod",
             "data": {
               "endpoint": "miscellanea/es9018k2m_ctl",
-              "method": "loadDefaultEs9018k2m",
+              "method": "execLoadDefaultControl",
               "data": ""
             }
           }
@@ -79,15 +79,6 @@
           "id": "ready",
           "element": "switch",
           "label": "TRANSLATE.UI.MUTE_ON_OFF",
-          "onClick": {
-            "type": "emit",
-            "message": "callMethod",
-            "data": {
-              "endpoint": "miscellanea/es9018k2m_ctl",
-              "method": "setMuteOnOff",
-              "data": ["ready"]
-            }
-          },
           "value": true
         }
       ]

@@ -284,7 +284,7 @@ ControllerES9018K2M.prototype.initVariables = function() {
   self.rBal = 0;
   self.balance = 0;
   self.balanceNote = self.getI18nString('MID_BALANCE');
-  self.centerBalance = 29;
+  self.centerBalance = 39;
 };
 
 ControllerES9018K2M.prototype.initRegister = function()
@@ -673,20 +673,18 @@ ControllerES9018K2M.prototype.unmuteES9018K2m  = function(){
 */
 ControllerES9018K2M.prototype.execBalanceControl = function(data) {
   var self = this;
-  var value;
 
   self.balance = parseInt(data['balance_adjust']);
   self.config.set('balance', self.balance);
-  value = self.balance + self.centerBalance;
-  self.logger.info("ControllerES9018K2M::execBalanceControl:"+value);
 
-  self.setBalance(value);
+  self.setBalance(self.balance);
 };
 
 ControllerES9018K2M.prototype.setBalance = function(value){
   var self=this;
   var result;
 
+  value += self.centerBalance;
   self.logger.info("ControllerES9018K2M::setBalance:"+value);
 
   if (value === self.centerBalance) {         // Mid point
@@ -720,12 +718,12 @@ ControllerES9018K2M.prototype.setBalance = function(value){
   self.logger.info("ControllerES9018K2M::setBalance:RESULT:"+result);
 };
 
-ControllerES9018K2M.prototype.resetBalanceCtl = function() {
+ControllerES9018K2M.prototype.execResetBalanceControl = function() {
   var self = this;
 
-  self.balanceNote = self.getI18nString('MID_BALANCE');
   self.balance = 0;
-  self.setBalance(self.centerBalance);
+  self.balanceNote = self.getI18nString('MID_BALANCE');
+  self.setBalance(self.balance);
   self.applyUIConfig();
 };
 

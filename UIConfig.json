@@ -111,8 +111,8 @@
             "orientation": "horizontal",
             "bars": [
               {
-                "min": -29,
-                "max": 29,
+                "min": -39,
+                "max": 39,
                 "step": 1,
                 "value": 0,
                 "tooltip":"always"
@@ -129,7 +129,7 @@
             "message": "callMethod",
             "data": {
               "endpoint": "miscellanea/es9018k2m_ctl",
-              "method": "resetBalanceCtl",
+              "method": "execResetBalanceControl",
               "data": ""
             }
           }

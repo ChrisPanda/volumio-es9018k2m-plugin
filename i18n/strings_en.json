@@ -12,7 +12,7 @@
     "BALANCE": "Left/Right Balance",
     "BALANCE_ADJUST": "Adjust Balance",
     "BALANCE_RESET": "Reset Balance",
-    "CHANNEL_SWITCH": "Channel Switch(Normal/Reverse)",
+    "CHANNEL_SWITCH": "Channel Switch(L/R<->R/L)",
     "VOLUME": "H/W Volume",
     "MUTE_ON_OFF": "Normal/Mute",
     "CHECK_DEVICE": "Check Device",

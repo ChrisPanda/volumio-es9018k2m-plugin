@@ -252,7 +252,7 @@ ControllerES9018K2M.prototype.initVariables = function() {
   var self=this;
 
   self.ready = true;
-  self.volumeLevel = 80;
+  self.volumeLevel = 90;
   self.channel = true;
 
   self.fir = 1;

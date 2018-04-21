@@ -17,8 +17,8 @@
     "CHECK_DEVICE": "Check Device",
     "DEFAULT_VALUE": "Load default value",
     "DIGITAL_FILTER": "Digital Filter",
-    "DE_EMPHASIS_FILTER": "Deemphasis Filter",
-    "FIR_FILTER": "FIR(Finite Impulse Response)",
+    "DE_EMPHASIS_FILTER": "Deemphasis",
+    "FILTER_SHAPE": "Filter Shape",
     "IIR_FILTER": "IIR(Infinite  Impulse Response)",
     "DPLL": "DPLL(Digital Phase Locked Loop) Jitter Reduction"
   }

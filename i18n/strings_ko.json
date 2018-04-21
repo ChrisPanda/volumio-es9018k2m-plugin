@@ -18,7 +18,7 @@
     "DEFAULT_VALUE": "기본값으로 변경",
     "DIGITAL_FILTER": "디지털 필터",
     "DE_EMPHASIS_FILTER": "Deemphasis 필터",
-    "FIR_FILTER": "FIR(선형) 필터",
+    "FILTER_SHAPE": "필터 쉐이프",
     "IIR_FILTER": "IIR(비선형) 필터",
     "DPLL": "DPLL(위상고정, 지터제거)"
   }

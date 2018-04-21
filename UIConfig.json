@@ -89,7 +89,6 @@
       "element": "section",
       "label": "TRANSLATE.UI.BALANCE",
       "icon": "fa-cogs",
-      "description": "balance menu",
       "onSave": {
         "type": "controller",
         "endpoint":"miscellanea/es9018k2m_ctl",
@@ -159,8 +158,8 @@
           "id": "fir_filter",
           "type": "number",
           "element": "select",
-          "label": "TRANSLATE.UI.FIR_FILTER",
-          "description": "",
+          "label": "TRANSLATE.UI.FILTER_SHAPE",
+          "description": "default: Fast Roll off",
           "value": {
             "value": 1,
             "label": "Fast FIR (default)"
@@ -189,31 +188,31 @@
           "type": "number",
           "element": "select",
           "label": "TRANSLATE.UI.IIR_FILTER",
-          "description": "",
+          "description": "default: 47K",
           "value": {
             "value": 0,
             "label": "47K"
           },
           "options": [
             {
+              "value": 4,
+              "label": "OFF"
+            },
+            {
               "value": 0,
               "label": "47K"
             },
             {
               "value": 1,
-              "label": "50K"
+              "label": "50K DSD"
             },
             {
               "value": 2,
-              "label": "60K"
+              "label": "60K DSD"
             },
             {
               "value": 3,
-              "label": "70K"
-            },
-            {
-              "value": 4,
-              "label": "OFF"
+              "label": "70K DSD"
             }
           ]
         },
@@ -222,7 +221,7 @@
           "type": "number",
           "element": "select",
           "label": "TRANSLATE.UI.DE_EMPHASIS_FILTER",
-          "description": "",
+          "description": "default: Off",
           "value": {
             "value": 66,
             "label": "Off"
@@ -276,7 +275,7 @@
           "type": "number",
           "element": "select",
           "label": "i2s",
-          "description": "",
+          "description": "default: 05",
           "value": {
             "value": 80,
             "label": "05 (default)"
@@ -353,7 +352,7 @@
           "type": "number",
           "element": "select",
           "label": "DSD",
-          "description": "",
+          "description": "default: 10",
           "value": {
             "value": 10,
             "label": "10 (default)"

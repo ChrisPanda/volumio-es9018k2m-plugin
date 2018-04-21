@@ -12,6 +12,7 @@
     "BALANCE": "좌/우 밸런스",
     "BALANCE_ADJUST": "밸런스 조정",
     "BALANCE_RESET": "밸런스 초기화",
+    "CHANNEL_SWITCH": "채널 스위치(L/R):정상/반대",
     "VOLUME": "H/W 볼륨",
     "MUTE_ON_OFF": "정상/음소거",
     "CHECK_DEVICE": "디바이스 검사",

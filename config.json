@@ -15,6 +15,10 @@
     "type": "string",
     "value": "balanced"
   },
+  "channel": {
+    "type": "boolean",
+    "value": true
+  },
   "fir": {
     "type": "number",
     "value": 1

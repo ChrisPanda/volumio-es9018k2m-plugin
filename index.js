@@ -267,6 +267,7 @@ ControllerES9018K2M.prototype.initVariables = function() {
 
   self.ready = true;
   self.volumeLevel = 80;
+  self.channel = true;
 
   self.fir = 1;
   self.firLabel = "Fast FIR (default)";
@@ -370,6 +371,8 @@ ControllerES9018K2M.prototype.applyFunction = function() {
 
   self.setI2sDPLL(self.i2sDPLL, self.i2sLabelDPLL);
   self.setDsdDPLL(self.dsdDPLL, self.dsdLabelDPLL);
+
+  self.switchChannel();
 
   self.unmuteES9018K2m();
   self.localApply = true;
@@ -690,10 +693,31 @@ ControllerES9018K2M.prototype.unmuteES9018K2m  = function(){
 ControllerES9018K2M.prototype.execBalanceControl = function(data) {
   var self = this;
 
-  self.balance = parseInt(data['balance_adjust']);
-  self.config.set('balance', self.balance);
+  var balance = parseInt(data['balance_adjust']);
+  var channel = data['channel_switch'];
 
+  if (self.balance !== balance) {
+    self.balance = balance;
+    self.config.set('balance', self.balance);
+    self.setBalance(self.balance);
+  }
   self.setBalance(self.balance);
+  if (self.channel !== channel) {
+    self.channel = channel;
+    self.config.set('channel', self.channel);
+    self.switchChannel();
+  }
+};
+
+ControllerES9018K2M.prototype.switchChannel = function() {
+  var self = this;
+
+  self.logger.info("ControllerES9018K2M::switchChannel:");
+
+  if (self.channel)
+    self.writeRegister(11, 0x02);
+  else
+    self.writeRegister(11, 0x01);
 };
 
 ControllerES9018K2M.prototype.setBalance = function(value){

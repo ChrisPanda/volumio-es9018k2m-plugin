@@ -97,7 +97,7 @@
       "saveButton": {
         "label": "TRANSLATE.UI.SAVE",
         "data": [
-          "balance_adjust"
+          "balance_adjust", "channel_switch"
         ]
       },
       "content": [
@@ -118,6 +118,13 @@
               }
             ]
           }
+        },
+        {
+          "id": "channel_switch",
+          "element": "switch",
+          "description": "Left/Right, Right/Left Channel",
+          "label": "TRANSLATE.UI.CHANNEL_SWITCH",
+          "value": true
         },
         {
           "id": "balance_reset",
@@ -196,7 +203,7 @@
           "options": [
             {
               "value": 4,
-              "label": "OFF"
+              "label": "Off"
             },
             {
               "value": 0,

@@ -44,7 +44,7 @@ ControllerES9018K2M.prototype.onStart = function() {
   self.execDeviceCheckControl();
   self.loadConfig();
 
-  self.serviceName = "es9018k2m_ctl";
+  self.serviceName = self.getI18nString('PLUGIN_NAME');
 
   if (self.es9018k2m) {
     self.loadDefaultValue();
@@ -143,7 +143,7 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
   .then(function(uiconf)
   {
     if (self.es9018k2m)
-      uiconf.sections[0].description = self.getI18nString('I2S_ENABLED');
+      uiconf.sections[0].description = self.getI18nString('I2S_ENABLED') + self.deviceStatus;
     else
       uiconf.sections[0].description = self.getI18nString('I2S_DISABLED');
 
@@ -152,7 +152,8 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
 
     uiconf.sections[2].content[0].config.bars[0].value = self.balance;
     uiconf.sections[2].content[0].description = self.balanceNote;
-    uiconf.sections[2].content[1].value = self.ready;
+    uiconf.sections[2].content[1].value =
+        {value: self.channel, label: self.channelLabel};
 
     uiconf.sections[3].content[0].value =
         {value: self.fir, label: self.firLabel};
@@ -201,7 +202,7 @@ ControllerES9018K2M.prototype.updateUIConfig = function() {
         uiconf, 'sections[2].content[0].description', self.balanceNote
     );
     self.configManager.setUIConfigParam(
-        uiconf, 'sections[2].content[1].value', self.channel
+        uiconf, 'sections[2].content[1].value', {value: self.channel, label: self.channelLabel}
     );
 
     self.configManager.setUIConfigParam(
@@ -254,6 +255,7 @@ ControllerES9018K2M.prototype.initVariables = function() {
   self.ready = true;
   self.volumeLevel = 90;
   self.channel = true;
+  self.channelLabel = "Left/Right";
 
   self.fir = 1;
   self.firLabel = "Fast FIR (default)";
@@ -288,30 +290,29 @@ ControllerES9018K2M.prototype.initRegister = function()
   self.reg4=0x00;  // Automute time. Default = disabled
   self.reg5=0x68;  // Automute level. Default is some level, but in reg4 default has automute disabled
   self.reg7=0x80;  // General settings. Default value fast fir, pcm iir and unmuted
-  self.reg8=0x81;  // GPIO configuration. GPIO1 set to DPLL Lock; GPIO2 set to input (for SPDIF)
-  self.reg9=0x00;  // Master Mode Control. Default value: master mode off
+  //self.reg8=0x81;  // GPIO configuration. GPIO1 set to DPLL Lock; GPIO2 set to input (for SPDIF)
+  //self.reg9=0x00;  // Master Mode Control. Default value: master mode off
+  //self.reg11=0x02; // Channel Mapping. (Default stereo is Ch1=left, Ch2=right)
   self.reg12=0x5A; // DPLL settings.
           // Default= one level above lowest for I2S
           //          two levels above mid setting for DSD
   self.reg14=0x8A; // Soft Start settings
-  self.reg21=0x00; // Oversampling filter setting and GPIO settings. Default: oversampling ON
-  self.reg11=0x02; // Channel Mapping. (Default stereo is Ch1=left, Ch2=right)
+  //self.reg21=0x00; // Oversampling filter setting and GPIO settings. Default: oversampling ON
 };
 
 ControllerES9018K2M.prototype.loadDefaultValue = function() {
   var self = this;
 
-  self.muteES9018K2m();                   // Mute DACs
-  //self.muteES9018K2m();                 // Redundant mute DACs
+  self.muteES9018K2m();                // Mute DACs
+  //self.muteES9018K2m();              // Redundant mute DACs
   self.writeRegister(0, self.reg0);    // System Settings
   self.writeRegister(4, self.reg4);    // Automute
   self.writeRegister(5, self.reg5);    // Automute Level
   //self.writeRegister(8, self.reg8);  // GPIO default configuration
   //self.writeRegister(9, self.reg9);  // Master Mode. Default: OFF
+  //self.writeRegister(11, self.reg11);  // stereo
   self.writeRegister(14, self.reg14);  // Soft Start Settings
-  self.writeRegister(11, self.reg11);  // stereo
   self.setVolume(self.volumeLevel);    // Startup volume level
-
   self.unmuteES9018K2m();
 };
 
@@ -328,6 +329,11 @@ ControllerES9018K2M.prototype.execDeviceCheckControl = function() {
         revision = 'revision V';
       else
         revision = 'revision W';
+
+      if (chipStatus & 0x01)
+        self.deviceStatus = self.getI18nString('JITTER_LOCKED');
+      else
+        self.deviceStatus = self.getI18nString('JITTER_NOT_LOCKED');
     }
     else
       self.es9018k2m = false;
@@ -337,9 +343,9 @@ ControllerES9018K2M.prototype.execDeviceCheckControl = function() {
         + self.es9018k2mRevision);
 
     if (self.es9018k2m)
-      message = "Found: es9018k2m " + revision;
+      message = self.getI18nString('FOUND_DEVICE') + '[' + revision + ']';
     else
-      message = "No Found: es9018k2m i2s";
+      message = self.getI18nString('NOT_FOUND_DEVICE');
 
     self.commandRouter.pushToastMessage('info', self.serviceName, message);
   });
@@ -680,15 +686,17 @@ ControllerES9018K2M.prototype.execBalanceControl = function(data) {
   var self = this;
 
   var balance = parseInt(data['balance_adjust']);
-  var channel = data['channel_switch'];
+  var channel = data['channel_switch'].value;
+  self.logger.info("ControllerES9018K2M::channel_switch:"+channel.value);
 
   if (self.balance !== balance) {
     self.balance = balance;
     self.config.set('balance', self.balance);
     self.setBalance(self.balance);
   }
-  if (self.channel !== channel) {
-    self.channel = channel;
+  if (self.channel !== channel.value) {
+    self.channel = channel.value;
+    self.channelLabel = channel.label;
     self.config.set('channel', self.channel);
     self.switchChannel();
   }

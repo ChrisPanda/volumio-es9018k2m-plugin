@@ -121,10 +121,23 @@
         },
         {
           "id": "channel_switch",
-          "element": "switch",
-          "description": "Left/Right, Right/Left",
+          "element": "select",
+          "description": "default: Left/Right",
           "label": "TRANSLATE.UI.CHANNEL_SWITCH",
-          "value": true
+          "value": {
+            "value": true,
+            "label": "Left/Right"
+          },
+          "options": [
+            {
+              "value": true,
+              "label": "Left/Right"
+            },
+            {
+              "value": false,
+              "label": "Right/Left"
+            }
+          ]
         },
         {
           "id": "balance_reset",

@@ -132,10 +132,10 @@ ControllerES9018K2M.prototype.saveConfig = function() {
 ControllerES9018K2M.prototype.getUIConfig = function() {
   var self = this;
   var defer = libQ.defer();
-  var lang_code = this.commandRouter.sharedVars.get('language_code');
+  var lang_code = self.commandRouter.sharedVars.get('language_code');
 
-  self.getConf(this.configFile);
-  self.logger.info("ES9018K2M:getUIConfig");
+  self.getConf(self.configFile);
+  self.logger.info("ES9018K2M:getUIConfig:");
 
   self.commandRouter.i18nJson(__dirname+'/i18n/strings_' + lang_code + '.json',
       __dirname + '/i18n/strings_en.json',
@@ -266,7 +266,7 @@ ControllerES9018K2M.prototype.initVariables = function() {
   var self=this;
 
   self.ready = true;
-  self.volumeLevel = 70;
+  self.volumeLevel = 80;
 
   self.fir = 1;
   self.firLabel = "Fast FIR (default)";

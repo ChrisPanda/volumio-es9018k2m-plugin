@@ -143,9 +143,9 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
   .then(function(uiconf)
   {
     if (self.es9018k2m)
-      uiconf.sections[0].description = self.getI18nString('DEVICE_ENABLED') + self.deviceStatus;
+      uiconf.sections[0].content[0].description = self.getI18nString('DEVICE_DETECT') + self.deviceStatus;
     else
-      uiconf.sections[0].description = self.getI18nString('DEVICE_DISABLED');
+      uiconf.sections[0].content[0].description = self.getI18nString('DEVICE_NOT_DETECT');
 
     uiconf.sections[1].content[0].config.bars[0].value = self.volumeLevel;
     uiconf.sections[1].content[1].value = self.ready;

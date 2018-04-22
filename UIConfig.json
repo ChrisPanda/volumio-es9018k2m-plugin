@@ -14,6 +14,7 @@
           "id": "check_device",
           "element": "button",
           "label": "TRANSLATE.UI.CHECK_DEVICE",
+          "description": "",
           "onClick": {
             "type": "emit",
             "message": "callMethod",
@@ -277,7 +278,7 @@
       "element": "section",
       "label": "TRANSLATE.UI.DPLL",
       "icon": "fa-cogs",
-      "description": "The DPLL has adjustable bandwidth and  it is used for jitter reduction. the usable lowest bandwidth setting is one where no dropouts occur",
+      "description": "TRANSLATE.UI.DPLL_NOTE",
       "onSave": {
         "type": "controller",
         "endpoint": "miscellanea/es9018k2m_ctl",

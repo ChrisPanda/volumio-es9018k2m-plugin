@@ -9,8 +9,8 @@
   "JITTER_NOT_LOCKED": "Jitter Eliminator is not locked",
   "MID_BALANCE": "Balanced Left/Right Channels",
   "LOAD_DEFAULT": "Load default values",
-  "DEVICE_ENABLED": "es9018k2m i2s DAC is enabled and can be control by plugin.",
-  "DEVICE_DISABLED": "Current DAC is not an es9018k2m that supports i2c so plugin can't control status.",
+  "DEVICE_DETECT": "detect s9018k2m and can be control by plugin",
+  "DEVICE_NOT_DETECT": "Current DAC is not an es9018k2m that supports i2c so plugin can't control status.",
   "UI": {
     "CONFIG": "configuration",
     "DEVICE": "Device",
@@ -27,6 +27,7 @@
     "DE_EMPHASIS_FILTER": "Deemphasis",
     "FILTER_SHAPE": "Filter Shape",
     "IIR_FILTER": "IIR(Infinite  Impulse Response)",
-    "DPLL": "DPLL(Digital Phase Locked Loop) Jitter Reduction"
+    "DPLL": "DPLL(Digital Phase Locked Loop) Jitter Reduction",
+    "DPLL_NOTE": "DPLL has adjustable bandwidth and it is used for jitter reduction. the usable lowest bandwidth setting is one where no dropouts occur."
   }
 }

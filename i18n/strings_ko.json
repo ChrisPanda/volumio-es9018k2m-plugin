@@ -9,8 +9,8 @@
   "JITTER_NOT_LOCKED": "지터 제거 비동작",
   "MID_BALANCE": "좌/우 동일",
   "LOAD_DEFAULT": "기본값으로 변경",
-  "DEVICE_ENABLED": "es9018k2m i2s DAC 활성화되어서 플러그인에서 제어 가능.",
-  "DEVICE_DISABLED": "현재 DAC는 i2c를 지원하는 es9018k2m 이 아닙니다. 플러그인이 상태 제어를 할수 없습니다.",
+  "DEVICE_DETECT": "es9018k2m 확인되어 제어 가능: ",
+  "DEVICE_NOT_DETECT": "현재 DAC는 i2c를 지원하는 es9018k2m 이 아닙니다. 플러그인이 상태 제어를 할수 없습니다.",
   "UI": {
     "CONFIG": "설정",
     "DEVICE": "디바이스",
@@ -27,6 +27,7 @@
     "DE_EMPHASIS_FILTER": "Deemphasis 필터",
     "FILTER_SHAPE": "필터 쉐이프",
     "IIR_FILTER": "IIR(비선형) 필터",
-    "DPLL": "DPLL(위상고정, 지터제거)"
+    "DPLL": "DPLL(위상고정, 지터제거)",
+    "DPLL_NOTE": "변경가능한 대역폭으로 지터(jitter)를 줄이는데 사용하며 음이 귾기지 않는 가장 낮은 대역폭 값을 권장"
   }
 }

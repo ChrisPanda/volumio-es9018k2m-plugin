@@ -47,8 +47,8 @@ ControllerES9018K2M.prototype.onStart = function() {
   self.serviceName = self.getI18nString('PLUGIN_NAME');
 
   if (self.es9018k2m) {
-    self.loadDefaultValue();
-    self.commandRouter.pushToastMessage('info', self.serviceName, "start es9018k2m");
+    self.initDevice();
+    //self.commandRouter.pushToastMessage('info', self.serviceName, "start es9018k2m");
   }
 
   return libQ.resolve();
@@ -134,7 +134,7 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
   var defer = libQ.defer();
   var lang_code = self.commandRouter.sharedVars.get('language_code');
 
-  self.getConf(self.configFile);
+  //self.getConf(self.configFile);
   self.logger.info("ES9018K2M:getUIConfig:");
 
   self.commandRouter.i18nJson(__dirname+'/i18n/strings_' + lang_code + '.json',
@@ -143,9 +143,9 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
   .then(function(uiconf)
   {
     if (self.es9018k2m)
-      uiconf.sections[0].description = self.getI18nString('I2S_ENABLED') + self.deviceStatus;
+      uiconf.sections[0].description = self.getI18nString('DEVICE_ENABLED') + self.deviceStatus;
     else
-      uiconf.sections[0].description = self.getI18nString('I2S_DISABLED');
+      uiconf.sections[0].description = self.getI18nString('DEVICE_DISABLED');
 
     uiconf.sections[1].content[0].config.bars[0].value = self.volumeLevel;
     uiconf.sections[1].content[1].value = self.ready;
@@ -300,7 +300,7 @@ ControllerES9018K2M.prototype.initRegister = function()
   //self.reg21=0x00; // Oversampling filter setting and GPIO settings. Default: oversampling ON
 };
 
-ControllerES9018K2M.prototype.loadDefaultValue = function() {
+ControllerES9018K2M.prototype.initDevice = function() {
   var self = this;
 
   self.muteES9018K2m();                // Mute DACs
@@ -312,7 +312,9 @@ ControllerES9018K2M.prototype.loadDefaultValue = function() {
   //self.writeRegister(9, self.reg9);  // Master Mode. Default: OFF
   //self.writeRegister(11, self.reg11);  // stereo
   self.writeRegister(14, self.reg14);  // Soft Start Settings
+  self.localApply = false;
   self.setVolume(self.volumeLevel);    // Startup volume level
+  self.localApply = true;
   self.unmuteES9018K2m();
 };
 
@@ -339,8 +341,7 @@ ControllerES9018K2M.prototype.execDeviceCheckControl = function() {
       self.es9018k2m = false;
 
     self.logger.info("ControllerES9018K2M::execDeviceCheckControl:" + self.es9018k2m);
-    self.logger.info("ControllerES9018K2M::ES9018k2mRevision:"
-        + self.es9018k2mRevision);
+    self.logger.info("ControllerES9018K2M::ES9018k2mRevision:" + revision);
 
     if (self.es9018k2m)
       message = self.getI18nString('FOUND_DEVICE') + '[' + revision + ']';
@@ -375,12 +376,11 @@ ControllerES9018K2M.prototype.execLoadDefaultControl= function() {
 
   self.initVariables();
   self.initRegister();
-  self.loadDefaultValue();
+  self.initDevice();
   self.applyFunction();
   self.updateUIConfig();
   self.saveConfig();
-
-  self.commandRouter.pushToastMessage('info', self.serviceName, "reset to default");
+  self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('LOAD_DEFAULT'));
 };
 
 ControllerES9018K2M.prototype.execVolumeControl = function(data) {
@@ -686,9 +686,10 @@ ControllerES9018K2M.prototype.execBalanceControl = function(data) {
   var self = this;
 
   var balance = parseInt(data['balance_adjust']);
-  var channel = data['channel_switch'].value;
-  self.logger.info("ControllerES9018K2M::channel_switch:"+channel.value);
+  var channel = data['channel_switch'];
+  self.logger.info("ControllerES9018K2M::channel_switch:"+JSON.stringify(channel));
 
+  self.localApply = false;
   if (self.balance !== balance) {
     self.balance = balance;
     self.config.set('balance', self.balance);
@@ -699,7 +700,9 @@ ControllerES9018K2M.prototype.execBalanceControl = function(data) {
     self.channelLabel = channel.label;
     self.config.set('channel', self.channel);
     self.switchChannel();
+    self.commandRouter.pushToastMessage('info', self.serviceName, channel.label);
   }
+  self.localApply = true;
 };
 
 ControllerES9018K2M.prototype.switchChannel = function() {

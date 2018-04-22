@@ -6,7 +6,7 @@
     {
       "id": "device_control",
       "element": "section",
-      "label": "TRANSLATE.UI.CHECK_DEVICE",
+      "label": "TRANSLATE.UI.DEVICE",
       "icon": "fa-cogs",
       "description": "",
       "content": [

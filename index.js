@@ -272,7 +272,7 @@ ControllerES9018K2M.prototype.initVariables = function() {
   self.balanceNote = self.getI18nString('MID_BALANCE');
   self.centerBalance = 40;
 
-  self.localApply = true;
+  self.messageOn = true; // default toast message on
 };
 
 ControllerES9018K2M.prototype.initRegister = function()
@@ -301,9 +301,9 @@ ControllerES9018K2M.prototype.initDevice = function() {
   //self.writeRegister(9, self.reg9);  // Master Mode. Default: OFF
   //self.writeRegister(11, self.reg11);  // stereo
   self.writeRegister(14, self.reg14);  // Soft Start Settings
-  self.localApply = false;
+  self.messageOn = false;
   self.setVolume(self.volumeLevel);    // Startup volume level
-  self.localApply = true;
+  self.messageOn = true;
   self.unmuteES9018K2m();
 };
 
@@ -345,7 +345,7 @@ ControllerES9018K2M.prototype.execDeviceCheckControl = function() {
 ControllerES9018K2M.prototype.applyFunction = function() {
   var self = this;
 
-  self.localApply = false;
+  self.messageOn = false;
   self.setBalance(self.balance);
 
   self.setFirFilter({value: self.fir, label: self.firLabel});
@@ -358,7 +358,7 @@ ControllerES9018K2M.prototype.applyFunction = function() {
   self.switchChannel();
 
   self.unmuteES9018K2m();
-  self.localApply = true;
+  self.messageOn = true;
 };
 
 ControllerES9018K2M.prototype.execLoadDefaultControl= function() {
@@ -431,7 +431,7 @@ ControllerES9018K2M.prototype.setI2sDPLL = function (selected) {
   self.logger.info("ControllerES9018K2M::setI2sDPLL:reg12:"+self.reg12);
   self.writeRegister(0x0C, self.reg12);
 
-  if (self.localApply)
+  if (self.messageOn)
     self.commandRouter.pushToastMessage('info', self.serviceName, result);
 
   self.config.set('i2sDPLL', self.i2sDPLL);
@@ -452,7 +452,7 @@ ControllerES9018K2M.prototype.setDsdDPLL = function (selected) {
   self.logger.info("ControllerES9018K2M::setDsdDPLL:reg12:"+self.reg12);
   self.writeRegister(0x0C, self.reg12);
 
-  if (self.localApply)
+  if (self.messageOn)
     self.commandRouter.pushToastMessage('info', self.serviceName, result);
 
   self.config.set('dsdDPLL', self.dsdDPLL);
@@ -513,7 +513,7 @@ ControllerES9018K2M.prototype.setFirFilter = function(selected){
   self.logger.info("ControllerES9018K2M::REG7:AFTER:"+self.reg7);
   self.logger.info("ControllerES9018K2M::REG21:"+self.reg21);
 
-  if (self.localApply)
+  if (self.messageOn)
     self.commandRouter.pushToastMessage('info', self.serviceName, result);
 
   self.config.set('fir', self.fir);
@@ -564,7 +564,7 @@ ControllerES9018K2M.prototype.setIirFilter = function(selected) {
   }
   result = "IIR Filter: "+ selected.label;
 
-  if (self.localApply)
+  if (self.messageOn)
     self.commandRouter.pushToastMessage('info', self.serviceName, result);
 
   self.config.set('iir', self.iir);
@@ -584,7 +584,7 @@ ControllerES9018K2M.prototype.setDeemphasisFilter = function(selected) {
 
   result = "Deemphasis: " + selected.label;
 
-  if (self.localApply)
+  if (self.messageOn)
     self.commandRouter.pushToastMessage('info', self.serviceName, result);
 
   self.config.set('deemphasis', self.deemphasis);
@@ -603,7 +603,7 @@ ControllerES9018K2M.prototype.setVolume = function(regVal) {
   self.writeRegister(15, value + self.lBal); // set up volume in Channel 1 (Left)
   self.writeRegister(16, value + self.rBal); // set up volume in Channel 1 (Right)
 
-  if (self.localApply)
+  if (self.messageOn)
     self.commandRouter.pushToastMessage('info', self.serviceName, "Adjust Volume");
 };
 
@@ -630,7 +630,7 @@ ControllerES9018K2M.prototype.execBalanceControl = function(data) {
   var channel = data['channel_switch'];
   self.logger.info("ControllerES9018K2M::channel_switch:"+JSON.stringify(channel));
 
-  self.localApply = false;
+  self.messageOn = false;
   if (self.balance !== balance) {
     self.balance = balance;
     self.config.set('balance', self.balance);
@@ -644,7 +644,7 @@ ControllerES9018K2M.prototype.execBalanceControl = function(data) {
     self.commandRouter.pushToastMessage('info', self.serviceName,
         self.getI18nString('SWITCH_CHANNEL') + channel.label);
   }
-  self.localApply = true;
+  self.messageOn = true;
 };
 
 ControllerES9018K2M.prototype.switchChannel = function() {
@@ -692,7 +692,7 @@ ControllerES9018K2M.prototype.setBalance = function(value){
   self.setVolume(self.volumeLevel);
   self.updateUIConfig();
 
-  if (self.localApply)
+  if (self.messageOn)
     self.commandRouter.pushToastMessage('info', self.serviceName, "Balance Adjust");
 
   self.logger.info("ControllerES9018K2M::setBalance:RESULT:"+result);

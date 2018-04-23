@@ -271,8 +271,6 @@ ControllerES9018K2M.prototype.initVariables = function() {
   self.balance = 0;
   self.balanceNote = self.getI18nString('MID_BALANCE');
   self.centerBalance = 40;
-
-  self.messageOn = true; // default toast message on
 };
 
 ControllerES9018K2M.prototype.initRegister = function()
@@ -293,6 +291,7 @@ ControllerES9018K2M.prototype.initRegister = function()
 ControllerES9018K2M.prototype.initDevice = function() {
   var self = this;
 
+  self.messageOn = false;
   self.muteES9018K2m();
   self.writeRegister(0, self.reg0);    // System Settings
   self.writeRegister(4, self.reg4);    // Automute
@@ -301,9 +300,7 @@ ControllerES9018K2M.prototype.initDevice = function() {
   //self.writeRegister(9, self.reg9);  // Master Mode. Default: OFF
   //self.writeRegister(11, self.reg11);  // stereo
   self.writeRegister(14, self.reg14);  // Soft Start Settings
-  self.messageOn = false;
   self.setVolume(self.volumeLevel);    // Startup volume level
-  self.messageOn = true;
   self.unmuteES9018K2m();
 };
 
@@ -358,7 +355,6 @@ ControllerES9018K2M.prototype.applyFunction = function() {
   self.switchChannel();
 
   self.unmuteES9018K2m();
-  self.messageOn = true;
 };
 
 ControllerES9018K2M.prototype.execLoadDefaultControl= function() {
@@ -412,6 +408,7 @@ ControllerES9018K2M.prototype.execDpllControl = function (data) {
   var selectedI2sDpll = data['i2sDPLL'];
   var selectedDsdDpll = data['dsdDPLL'];
 
+  self.messageOn = true;
   if (self.i2sDPLL !== selectedI2sDpll.value)
     self.setI2sDPLL(selectedI2sDpll);
   if (self.dsdDPLL !== selectedDsdDpll.value)
@@ -427,7 +424,7 @@ ControllerES9018K2M.prototype.setI2sDPLL = function (selected) {
   self.i2sDPLL = selected.value;
   self.i2sLabelDPLL = selected.label;
   self.reg12 &= 0x0F;
-  self.reg12 |= value;
+  self.reg12 |= selected.value;
   self.logger.info("ControllerES9018K2M::setI2sDPLL:reg12:"+self.reg12);
   self.writeRegister(0x0C, self.reg12);
 
@@ -447,7 +444,7 @@ ControllerES9018K2M.prototype.setDsdDPLL = function (selected) {
   self.dsdDPLL = selected.value;
   self.dsdLabelDPLL= selected.label;
   self.reg12 &= 0xF0;
-  self.reg12 |= value;
+  self.reg12 |= selected.value;
 
   self.logger.info("ControllerES9018K2M::setDsdDPLL:reg12:"+self.reg12);
   self.writeRegister(0x0C, self.reg12);
@@ -466,6 +463,7 @@ ControllerES9018K2M.prototype.execDigitalFilterControl = function(data) {
   var selectedIir = data['iir_filter'];
   var selectedDeemphasis = data['deemphasis_filter'];
 
+  self.messageOn = true;
   if (self.fir !== selectedFir.value) self.setFirFilter(selectedFir);
   if (self.iir !== selectedIir.value) self.setIirFilter(selectedIir);
   if (self.deemphasis !== selectedDeemphasis.value)
@@ -630,10 +628,10 @@ ControllerES9018K2M.prototype.execBalanceControl = function(data) {
   var channel = data['channel_switch'];
   self.logger.info("ControllerES9018K2M::channel_switch:"+JSON.stringify(channel));
 
-  self.messageOn = false;
   if (self.balance !== balance) {
     self.balance = balance;
     self.config.set('balance', self.balance);
+    self.messageOn = true;
     self.setBalance(self.balance);
   }
   if (self.channel !== channel.value) {
@@ -641,10 +639,10 @@ ControllerES9018K2M.prototype.execBalanceControl = function(data) {
     self.channelLabel = channel.label;
     self.config.set('channel', self.channel);
     self.switchChannel();
+    self.messageOn = true;
     self.commandRouter.pushToastMessage('info', self.serviceName,
         self.getI18nString('SWITCH_CHANNEL') + channel.label);
   }
-  self.messageOn = true;
 };
 
 ControllerES9018K2M.prototype.switchChannel = function() {

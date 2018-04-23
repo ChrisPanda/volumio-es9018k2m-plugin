@@ -29,7 +29,7 @@
   },
   "firLabel": {
     "type": "string",
-    "value": "Fast FIR (default)"
+    "value": "Fast Roll Off"
   },
   "iir": {
     "type": "number",
@@ -53,7 +53,7 @@
   },
   "i2sLabelDPLL": {
     "type": "string",
-    "value": "05 (default)"
+    "value": "05"
   },
   "dsdDPLL": {
     "type": "number",
@@ -61,6 +61,6 @@
   },
   "dsdLabelDPLL": {
     "type": "string",
-    "value": "10 (default)"
+    "value": "10"
   }
 }

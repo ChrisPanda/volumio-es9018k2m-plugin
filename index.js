@@ -348,12 +348,12 @@ ControllerES9018K2M.prototype.applyFunction = function() {
   self.localApply = false;
   self.setBalance(self.balance);
 
-  self.setFirFilter(self.fir);
-  self.setIirFilter(self.iir);
-  self.setDeemphasisFilter(self.deemphasis, self.deemphasisLabel);
+  self.setFirFilter({value: self.fir, label: self.firLabel});
+  self.setIirFilter({value: self.iir, label: self.iirLabel});
+  self.setDeemphasisFilter({value: self.deemphasis, label: self.deemphasisLabel});
 
-  self.setI2sDPLL(self.i2sDPLL, self.i2sLabelDPLL);
-  self.setDsdDPLL(self.dsdDPLL, self.dsdLabelDPLL);
+  self.setI2sDPLL({value: self.i2sDPLL, label: self.i2sLabelDPLL});
+  self.setDsdDPLL({value: self.dsdDPLL, label: self.dsdLabelDPLL});
 
   self.switchChannel();
 
@@ -409,30 +409,23 @@ ControllerES9018K2M.prototype.bitclear = function(reg, value) {
 ControllerES9018K2M.prototype.execDpllControl = function (data) {
   var self = this;
 
-  var selectedI2sDpll = data['i2sDPLL'].value;
-  var selectedDsdDpll = data['dsdDPLL'].value;
+  var selectedI2sDpll = data['i2sDPLL'];
+  var selectedDsdDpll = data['dsdDPLL'];
 
-  self.logger.info("ControllerES9018K2M::execDpllControl:i2sDPLL TYPE:"+typeof selectedI2sDpll);
-  self.logger.info("ControllerES9018K2M::execDpllControl:i2sDPLL:"+ selectedI2sDpll);
-
-  if (self.i2sDPLL !== selectedI2sDpll) {
-    var selectedLabelI2sDpll = data['i2sDPLL'].label;
-    self.setI2sDPLL(selectedI2sDpll, selectedLabelI2sDpll);
-  }
-  if (self.dsdDPLL !== selectedDsdDpll) {
-    var selectedLabelDsdDpll = data['dsdDPLL'].label;
-    self.setDsdDPLL(selectedDsdDpll, selectedLabelDsdDpll);
-  }
+  if (self.i2sDPLL !== selectedI2sDpll.value)
+    self.setI2sDPLL(selectedI2sDpll);
+  if (self.dsdDPLL !== selectedDsdDpll.value)
+    self.setDsdDPLL(selectedDsdDpll);
 };
 
 // DPLL Mode for I2S
-ControllerES9018K2M.prototype.setI2sDPLL = function (value, label) {
+ControllerES9018K2M.prototype.setI2sDPLL = function (selected) {
   var self=this;
   var result;
 
-  result = "i2s DPLL: " + label;
-  self.i2sDPLL = value;
-  self.i2sLabelDPLL = label;
+  result = "i2s DPLL: " + selected.label;
+  self.i2sDPLL = selected.value;
+  self.i2sLabelDPLL = selected.label;
   self.reg12 &= 0x0F;
   self.reg12 |= value;
   self.logger.info("ControllerES9018K2M::setI2sDPLL:reg12:"+self.reg12);
@@ -446,13 +439,13 @@ ControllerES9018K2M.prototype.setI2sDPLL = function (value, label) {
 };
 
 // DPLL Mode for DSD
-ControllerES9018K2M.prototype.setDsdDPLL = function (value, label) {
+ControllerES9018K2M.prototype.setDsdDPLL = function (selected) {
   var self=this;
   var result;
 
-  result = "DSD DPLL: " + label;
-  self.dsdDPLL = value;
-  self.dsdLabelDPLL= label;
+  result = "DSD DPLL: " + selected.label;
+  self.dsdDPLL = selected.value;
+  self.dsdLabelDPLL= selected.label;
   self.reg12 &= 0xF0;
   self.reg12 |= value;
 
@@ -469,16 +462,14 @@ ControllerES9018K2M.prototype.setDsdDPLL = function (value, label) {
 ControllerES9018K2M.prototype.execDigitalFilterControl = function(data) {
   var self=this;
 
-  var selectedFir = data['fir_filter'].value;
-  var selectedIir = data['iir_filter'].value;
-  var selectedDeemphasis = data['deemphasis_filter'].value;
+  var selectedFir = data['fir_filter'];
+  var selectedIir = data['iir_filter'];
+  var selectedDeemphasis = data['deemphasis_filter'];
 
   if (self.fir !== selectedFir.value) self.setFirFilter(selectedFir);
   if (self.iir !== selectedIir.value) self.setIirFilter(selectedIir);
-  if (self.deemphasis !== selectedDeemphasis) {
-    var deemphasisLabel = data['deemphasis_filter'].label;
-    self.setDeemphasisFilter(selectedDeemphasis, deemphasisLabel);
-  }
+  if (self.deemphasis !== selectedDeemphasis.value)
+    self.setDeemphasisFilter(selectedDeemphasis);
 };
 
 ControllerES9018K2M.prototype.setFirFilter = function(selected){
@@ -530,7 +521,7 @@ ControllerES9018K2M.prototype.setFirFilter = function(selected){
   self.logger.info("ControllerES9018K2M::setFirFilter:RESULT:"+result);
 };
 
-ControllerES9018K2M.prototype.setIirFilter = function(selected){
+ControllerES9018K2M.prototype.setIirFilter = function(selected) {
   var self=this;
   var result;
 
@@ -581,36 +572,23 @@ ControllerES9018K2M.prototype.setIirFilter = function(selected){
   self.logger.info("ControllerES9018K2M::setIirFilter:RESULT:"+result);
 };
 
-ControllerES9018K2M.prototype.setDeemphasisFilterCtl = function(data) {
-  var self=this;
-
-  var value = data['deemphasis_filter'].value;
-  var label = data['deemphasis_filter'].label;
-  self.logger.info("ControllerES9018K2M::setDeemphasisFilterCtl:"+value);
-
-  self.setDeemphasisFilter(value, label);
-};
-
-ControllerES9018K2M.prototype.setDeemphasisFilter = function(value, label) {
+ControllerES9018K2M.prototype.setDeemphasisFilter = function(selected) {
   var self=this;
   var result;
 
-  self.logger.info("ControllerES9018K2M::setDeemphasisFilter:"+value);
-
-  result = "Deemphasis: " + label;
-
-  self.deemphasis = value;
-  self.deemphasisLabel = label;
+  self.deemphasis = selected.value;
+  self.deemphasisLabel = selected.label;
 
   // off:0x4A, auto: 0x8A, 32K:0x0A, 44k:0x1A, 48k:0x2a, reserved: 0x3A
-  self.writeRegister(6, value);
+  self.writeRegister(6, selected.value);
 
-  self.config.set('deemphasis', self.deemphasis);
-  self.config.set('deemphasisLabel', self.deemphasisLabel);
+  result = "Deemphasis: " + selected.label;
 
   if (self.localApply)
     self.commandRouter.pushToastMessage('info', self.serviceName, result);
 
+  self.config.set('deemphasis', self.deemphasis);
+  self.config.set('deemphasisLabel', self.deemphasisLabel);
   self.logger.info("ControllerES9018K2M::setDeemphasisFilter:RESULT:"+result);
 };
 

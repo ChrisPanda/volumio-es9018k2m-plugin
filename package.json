@@ -1,7 +1,7 @@
 {
   "name": "es9018k2m_ctl",
   "version": "0.0.3",
-  "description": "es9018k2m function controll by i2c Plugin for Volumio2",
+  "description": "i2c es9018k2m function controll Plugin for Volumio2",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -18,8 +18,7 @@
     "fs-extra": "^0.30.0",
     "kew": "^0.7.0",
     "v-conf": "^1.4.0",
-    "i2c-bus": "^3.1.0",
-    "i2c": "0.2.3"
+    "i2c": "^0.2.3"
   },
   "repository": {
     "type": "git",

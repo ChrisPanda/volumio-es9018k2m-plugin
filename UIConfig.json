@@ -111,8 +111,8 @@
             "orientation": "horizontal",
             "bars": [
               {
-                "min": -39,
-                "max": 39,
+                "min": -40,
+                "max": 40,
                 "step": 1,
                 "value": 0,
                 "tooltip":"always"
@@ -162,7 +162,7 @@
       "element": "section",
       "label": "TRANSLATE.UI.DIGITAL_FILTER",
       "icon": "fa-cogs",
-      "description": "FIR, IIR, deemphasis_filter",
+      "description": "",
       "onSave": {
         "type": "controller",
         "endpoint": "miscellanea/es9018k2m_ctl",
@@ -183,16 +183,16 @@
           "description": "default: Fast Roll off",
           "value": {
             "value": 1,
-            "label": "Fast FIR (default)"
+            "label": "Fast Roll Off"
           },
           "options": [
             {
               "value": 0,
-              "label": "Slow FIR"
+              "label": "Slow Roll Off"
             },
             {
               "value": 1,
-              "label": "Fast FIR (default)"
+              "label": "Fast Roll Off"
             },
             {
               "value": 2,
@@ -200,7 +200,7 @@
             },
             {
               "value": 3,
-              "label": "Bypass oversampling"
+              "label": "Off"
             }
           ]
         },
@@ -216,10 +216,6 @@
           },
           "options": [
             {
-              "value": 4,
-              "label": "Off"
-            },
-            {
               "value": 0,
               "label": "47K"
             },
@@ -234,6 +230,10 @@
             {
               "value": 3,
               "label": "70K DSD"
+            },
+            {
+              "value": 4,
+              "label": "Off"
             }
           ]
         },
@@ -258,21 +258,16 @@
             },
             {
               "value": 26,
-              "label": "44K"
+              "label": "44.1K"
             },
             {
               "value": 42,
               "label": "48K"
-            },
-            {
-              "value": 58,
-              "label": "Reserved"
             }
           ]
         }
       ]
     },
-
     {
       "id": "dpll_jitter_control",
       "element": "section",
@@ -299,7 +294,7 @@
           "description": "default: 05",
           "value": {
             "value": 80,
-            "label": "05 (default)"
+            "label": "05"
           },
           "options": [
             {
@@ -324,7 +319,7 @@
             },
             {
               "value": 80,
-              "label": "05 (default)"
+              "label": "05"
             },
             {
               "value": 96,
@@ -376,7 +371,7 @@
           "description": "default: 10",
           "value": {
             "value": 10,
-            "label": "10 (default)"
+            "label": "10"
           },
           "options": [
             {
@@ -421,7 +416,7 @@
             },
             {
               "value": 10,
-              "label": "10 (default)"
+              "label": "10"
             },
             {
               "value": 11,

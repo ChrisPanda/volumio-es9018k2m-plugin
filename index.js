@@ -160,6 +160,8 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
         {value: self.i2sDPLL, label: self.i2sLabelDPLL};
     uiconf.sections[4].content[1].value =
         {value: self.dsdDPLL, label: self.dsdLabelDPLL};
+
+    uiconf.sections[5].content[0].value = self.enableTHD;
     defer.resolve(uiconf);
 
     // apply saved configuration data to es9018k2m
@@ -271,6 +273,8 @@ ControllerES9018K2M.prototype.initVariables = function() {
   self.balance = 0;
   self.balanceNote = self.getI18nString('MID_BALANCE');
   self.centerBalance = 40;
+
+  self.enableTHD = false;
 };
 
 ControllerES9018K2M.prototype.initRegister = function()
@@ -707,7 +711,7 @@ ControllerES9018K2M.prototype.execResetBalanceControl = function() {
   self.updateUIConfig();
 };
 
-ControllerES9018K2M.prototype.execThdControl = function() {
+ControllerES9018K2M.prototype.execThdControl = function(data) {
   var self = this;
 
   var thdControl = data['thd_onOff'];
@@ -727,10 +731,13 @@ ControllerES9018K2M.prototype.execThdControl = function() {
     self.writeRegister(25, reg25Msb);
     self.writeRegister(13, 0x00); // enable THD compensation
 
+    self.enableTHD = true;
+
     self.logger.info("ControllerES9018K2M::execThdVal:"+JSON.stringify(thdValues));
   }
   else {
     self.writeRegister(13, 0x40); // disable THD compensation
+    self.enableTHD = false;
   }
 
 };

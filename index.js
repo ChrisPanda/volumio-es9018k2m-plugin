@@ -339,6 +339,7 @@ ControllerES9018K2M.prototype.execDeviceCheckControl = function() {
       self.deviceStatus = self.getI18nString('DEVICE_NOT_DETECT_NOTE');
     }
 
+    self.updateUIConfig();
     self.commandRouter.pushToastMessage('info', self.serviceName, message);
   });
 };
@@ -715,15 +716,15 @@ ControllerES9018K2M.prototype.execThdControl = function(data) {
   var self = this;
 
   var thdControl = data['thd_onOff'];
-  self.logger.info("ControllerES9018K2M::execThdControl:"+thdControl);
+  self.logger.info("ControllerES9018K2M::execThdControl:"+JSON.stringify(thdValues));
   if (thdControl) {
     var thdValues = data['thd_adjust'];
     var reg22Lsb = thdValues[0] & 0x00FF;
     var reg23Msb = (thdValues[0] & 0xFF00) >> 8;
     var reg24Lsb = thdValues[1] & 0x00FF;
     var reg25Msb = (thdValues[1] & 0xFF00) >> 8;
-    self.logger.info("ControllerES9018K2M::execThdControl:reg22"+reg22Lsb);
-    self.logger.info("ControllerES9018K2M::execThdControl:reg23"+reg23Msb);
+    self.logger.info("ControllerES9018K2M::execThdControl:reg22:"+reg22Lsb);
+    self.logger.info("ControllerES9018K2M::execThdControl:reg23:"+reg23Msb);
 
     self.writeRegister(22, reg22Lsb);
     self.writeRegister(23, reg23Msb);
@@ -732,8 +733,6 @@ ControllerES9018K2M.prototype.execThdControl = function(data) {
     self.writeRegister(13, 0x00); // enable THD compensation
 
     self.enableTHD = true;
-
-    self.logger.info("ControllerES9018K2M::execThdVal:"+JSON.stringify(thdValues));
   }
   else {
     self.writeRegister(13, 0x40); // disable THD compensation

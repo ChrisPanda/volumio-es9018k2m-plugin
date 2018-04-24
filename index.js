@@ -388,10 +388,12 @@ ControllerES9018K2M.prototype.execVolumeControl = function(data) {
       self.muteES9018K2m();
   };
 
-  self.volumeLevel = volume;
-  self.config.set('volumeLevel', volume);
+  if (self.volumeLevel !== volume) {
+    self.volumeLevel = volume;
+    self.config.set('volumeLevel', volume);
 
-  self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('UPDATE_VOLUME'));
+    self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('UPDATE_VOLUME'));
+  }
 };
 
 ControllerES9018K2M.prototype.bitset = function(reg, value) {
@@ -703,6 +705,34 @@ ControllerES9018K2M.prototype.execResetBalanceControl = function() {
   self.balanceNote = self.getI18nString('MID_BALANCE');
   self.setBalance(self.balance);
   self.updateUIConfig();
+};
+
+ControllerES9018K2M.prototype.execThdControl = function() {
+  var self = this;
+
+  var thdControl = data['thd_onOff'];
+  self.logger.info("ControllerES9018K2M::execThdControl:"+thdControl);
+  if (thdControl) {
+    var thdValues = data['thd_adjust'];
+    var reg22Lsb = thdValues[0] & 0x00FF;
+    var reg23Msb = (thdValues[0] & 0xFF00) >> 8;
+    var reg24Lsb = thdValues[1] & 0x00FF;
+    var reg25Msb = (thdValues[1] & 0xFF00) >> 8;
+    self.logger.info("ControllerES9018K2M::execThdControl:reg22"+reg22Lsb);
+    self.logger.info("ControllerES9018K2M::execThdControl:reg23"+reg23Msb);
+
+    self.writeRegister(22, reg22Lsb);
+    self.writeRegister(23, reg23Msb);
+    self.writeRegister(24, reg24Lsb);
+    self.writeRegister(25, reg25Msb);
+    self.writeRegister(13, 0x00); // enable THD compensation
+
+    self.logger.info("ControllerES9018K2M::execThdVal:"+JSON.stringify(thdValues));
+  }
+  else {
+    self.writeRegister(13, 0x40); // disable THD compensation
+  }
+
 };
 
 ControllerES9018K2M.prototype.readRegister = function(regAddr) {

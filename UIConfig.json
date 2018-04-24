@@ -441,6 +441,65 @@
           ]
         }
       ]
+    },
+    {
+      "id": "thd_control",
+      "element": "section",
+      "label": "TRANSLATE.UI.THD",
+      "description": "TRANSLATE.UI.THD_NOTE",
+      "icon": "fa-cogs",
+      "onSave": {
+        "type": "controller",
+        "endpoint": "miscellanea/es9018k2m_ctl",
+        "method": "execThdControl"
+      },
+      "saveButton": {
+        "label": "TRANSLATE.UI.SAVE",
+        "data": [
+          "thd_onOff", "thd_adjust"
+        ]
+      },
+      "content": [
+        {
+          "id": "thd_onOff",
+          "element": "switch",
+          "description": "default: Off",
+          "label": "TRANSLATE.UI.THD_ON_OFF",
+          "value": false
+        },
+        {
+          "id": "thd_adjust",
+          "element": "equalizer",
+          "label": "TRANSLATE.UI.THD_ADJUST",
+          "description": "",
+          "visibleIf": {"field": "thd_onOff", "value": true},
+          "config": {
+            "orientation": "horizontal",
+            "bars": [
+              {
+                "min": 0,
+                "max": 65535,
+                "step": 1,
+                "value": 65535,
+                "ticksLabels": [
+                  "TRANSLATE.UI.THD_2_COEFFICIENT"
+                ],
+                "tooltip": "always"
+              },
+              {
+                "min": 0,
+                "max": 65535,
+                "step": 1,
+                "value": 65535,
+                "ticksLabels": [
+                  "TRANSLATE.UI.THD_3_COEFFICIENT"
+                ],
+                "tooltip": "always"
+              }
+            ]
+          }
+        }
+      ]
     }
   ]
 }

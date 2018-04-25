@@ -366,7 +366,7 @@ ControllerES9018K2M.prototype.applyFunction = function() {
   self.unmuteES9018K2m();
 };
 
-ControllerES9018K2M.prototype.execLoadDefaultControl= function() {
+ControllerES9018K2M.prototype.execResetDeviceControl= function() {
   var self = this;
 
   if (!self.es9018k2m) {
@@ -743,7 +743,7 @@ ControllerES9018K2M.prototype.execResetBalanceControl = function() {
 ControllerES9018K2M.prototype.getSampleRate = function() {
   var self=this;
   var defer = libQ.defer();
-  var DPLLNum=0;
+  var nDPLL=0;
   var reg66, reg67, reg68, reg69;
 
   // read DPLL registers one byte into LSB
@@ -760,20 +760,20 @@ ControllerES9018K2M.prototype.getSampleRate = function() {
           reg69 = value4;
           self.logger.info("ControllerES9018K2M::getSampleRate:reg69:" + value4);
 
-          DPLLNum |= reg69;
-          DPLLNum <<=8;
-          DPLLNum |= reg68;
-          DPLLNum <<=8;
-          DPLLNum |= reg67;
-          DPLLNum <<=8;
-          DPLLNum |= reg66;
-          DPLLNum >>= 1;    // Get rid of LSB to allow for integer operation below to avoid overflow
+          nDPLL |= reg69;
+          nDPLL <<=8;
+          nDPLL |= reg68;
+          nDPLL <<=8;
+          nDPLL |= reg67;
+          nDPLL <<=8;
+          nDPLL |= reg66;
+          nDPLL >>= 1;    // Get rid of LSB to allow for integer operation below to avoid overflow
 
-          DPLLNum *= 20;    // Calculate sampleRate for 100MHz
-          DPLLNum /= 859;
-          DPLLNum *= 2;
+          nDPLL *= 20;    // Calculate for 100MHz crystal
+          nDPLL /= 859;
+          nDPLL *= 2;
           defer.resolve(DPLLNum);
-          self.logger.info("ControllerES9018K2M::getSampleRate:DPLLNum:" + DPLLNum );
+          self.logger.info("ControllerES9018K2M::getSampleRate:nDPLL:" + nDPLL);
         });
       });
     });
@@ -789,10 +789,11 @@ ControllerES9018K2M.prototype.parseSampleRate = function() {
 
   self.getSampleRate().then(function (sampleRate) {
     if (sampleRate) {
+      mode = self.getI18nString('PLAYING');
       if (sampleRate > 2822000)
-        mode = "Playing DSD ";
+        mode += "DSD ";
       else
-        mode = "Playing PCM ";
+        mode += "PCM ";
 
       switch (true) {
         case sampleRate > 6143000:
@@ -861,6 +862,8 @@ ControllerES9018K2M.prototype.execThdControl = function(data) {
     var reg25Msb = (thdValues[1] & 0xFF00) >> 8;
     self.logger.info("ControllerES9018K2M::execThdControl:reg22:"+reg22Lsb);
     self.logger.info("ControllerES9018K2M::execThdControl:reg23:"+reg23Msb);
+    reg22Lsb = 0; // test!!
+    reg24Lsb = 0;
 
     self.writeRegister(22, reg22Lsb);
     self.writeRegister(23, reg23Msb);

@@ -13,7 +13,7 @@
         {
           "id": "check_device",
           "element": "button",
-          "label": "TRANSLATE.UI.CHECK_DEVICE",
+          "label": "TRANSLATE.UI.DEVICE_STATUS",
           "description": "",
           "onClick": {
             "type": "emit",
@@ -26,15 +26,15 @@
           }
         },
         {
-          "id": "init_device",
+          "id": "reset_device",
           "element": "button",
-          "label": "TRANSLATE.UI.DEFAULT_VALUE",
+          "label": "TRANSLATE.UI.DEVICE_RESET",
           "onClick": {
             "type": "emit",
             "message": "callMethod",
             "data": {
               "endpoint": "miscellanea/es9018k2m_ctl",
-              "method": "execLoadDefaultControl",
+              "method": "execResetDeviceControl",
               "data": ""
             }
           }
@@ -465,7 +465,7 @@
           "element": "switch",
           "description": "default: Off",
           "label": "TRANSLATE.UI.THD_ON_OFF",
-          "value": false
+          "value": true
         },
         {
           "id": "thd_adjust",

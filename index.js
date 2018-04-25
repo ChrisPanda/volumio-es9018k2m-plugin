@@ -311,7 +311,7 @@ ControllerES9018K2M.prototype.initDevice = function() {
 
 ControllerES9018K2M.prototype.execDeviceCheckControl = function() {
   var self=this;
-  var revision, message, sampleRate;
+  var revision, message, checkSampleRate=false;
 
   self.logger.info("ControllerES9018K2M::execDeviceCheckControl");
   self.readRegister(self.statusReg).then (function(chipStatus) {
@@ -325,11 +325,11 @@ ControllerES9018K2M.prototype.execDeviceCheckControl = function() {
 
       // playing status
       if (chipStatus & 0x01)
-        sampleRate = self.parseSampleRate();
+        checkSampleRate = true;
       else
-        sampleRate = '';
-      message = self.getI18nString('FOUND_DEVICE') + '[' + revision + ']';
-      self.deviceStatus = self.getI18nString('DEVICE_DETECT_NOTE') + sampleRate;
+        checkSampleRate = false;
+      message = self.getI18nString('FOUND_DEVICE') + '[' + revision + '] ';
+      self.deviceStatus = self.getI18nString('DEVICE_DETECT_NOTE');
     }
     else {
       self.es9018k2m = false;
@@ -338,7 +338,13 @@ ControllerES9018K2M.prototype.execDeviceCheckControl = function() {
     }
 
     self.updateUIConfig();
-    self.commandRouter.pushToastMessage('info', self.serviceName, message);
+    if (checkSampleRate) {
+      self.parseSampleRate().then (function (sampleRate) {
+        self.commandRouter.pushToastMessage('info', self.serviceName, message + sampleRate);
+      });
+    }
+    else
+      self.commandRouter.pushToastMessage('info', self.serviceName, message);
   });
 };
 
@@ -736,99 +742,106 @@ ControllerES9018K2M.prototype.execResetBalanceControl = function() {
 
 ControllerES9018K2M.prototype.getSampleRate = function() {
   var self=this;
+  var defer = libQ.defer();
   var DPLLNum=0;
   var reg66, reg67, reg68, reg69;
 
-  // Reading the 4 registers of DPLL one byte at a time starting with LSB (reg 66)
-  self.readRegister(66).then (function(value) {
-    reg66 = value;
-    self.logger.info("ControllerES9018K2M::getSampleRate:reg66:" + value );
-  });
-  self.readRegister(67).then (function(value) {
-    reg67 = value;
-    self.logger.info("ControllerES9018K2M::getSampleRate:reg67:" + value );
-  });
-  self.readRegister(68).then (function(value) {
-    reg68 = value;
-    self.logger.info("ControllerES9018K2M::getSampleRate:reg68:" + value );
-  });
-  self.readRegister(69).then (function(value) {
-    reg69 = value;
-    self.logger.info("ControllerES9018K2M::getSampleRate:reg69:" + value );
-  });
-  self.logger.info("ControllerES9018K2M::getSampleRate:DONE:");
+  // read DPLL registers one byte into LSB
+  self.readRegister(66).then (function(value1) {
+    reg66 = value1;
+    self.logger.info("ControllerES9018K2M::getSampleRate:reg66:" + value1);
+    self.readRegister(67).then (function(value2) {
+      reg67 = value2;
+      self.logger.info("ControllerES9018K2M::getSampleRate:reg67:" + value2);
+      self.readRegister(68).then (function(value3) {
+        reg68 = value3;
+        self.logger.info("ControllerES9018K2M::getSampleRate:reg68:" + value3);
+        self.readRegister(69).then (function(value4) {
+          reg69 = value4;
+          self.logger.info("ControllerES9018K2M::getSampleRate:reg69:" + value4);
 
-  DPLLNum |= reg69;
-  DPLLNum <<=8;
-  DPLLNum |= reg68;
-  DPLLNum <<=8;
-  DPLLNum |= reg67;
-  DPLLNum <<=8;
-  DPLLNum |= reg66;
-  DPLLNum >>= 1;    // Get rid of LSB to allow for integer operation below to avoid overflow
+          DPLLNum |= reg69;
+          DPLLNum <<=8;
+          DPLLNum |= reg68;
+          DPLLNum <<=8;
+          DPLLNum |= reg67;
+          DPLLNum <<=8;
+          DPLLNum |= reg66;
+          DPLLNum >>= 1;    // Get rid of LSB to allow for integer operation below to avoid overflow
 
-  DPLLNum *= 20;    // Calculate sampleRate for 100MHz
-  DPLLNum /= 859;
-  DPLLNum *= 2;
-  self.logger.info("ControllerES9018K2M::getSampleRate:DPLLNum :" + DPLLNum );
+          DPLLNum *= 20;    // Calculate sampleRate for 100MHz
+          DPLLNum /= 859;
+          DPLLNum *= 2;
+          defer.resolve(DPLLNum);
+          self.logger.info("ControllerES9018K2M::getSampleRate:DPLLNum:" + DPLLNum );
+        });
+      });
+    });
+  });
 
-  return DPLLNum;
+  return defer.promise;
 };
 
 ControllerES9018K2M.prototype.parseSampleRate = function() {
   var self = this;
   var mode;
-  var sampleRate;
+  var defer = libQ.defer();
 
-  sampleRate =self.getSampleRate();
+  self.getSampleRate().then(function (sampleRate) {
+    if (sampleRate) {
+      if (sampleRate > 2822000)
+        mode = "Playing DSD ";
+      else
+        mode = "Playing PCM ";
 
-  if(sampleRate > 2822000)
-    mode = "Playing DSD ";
-  else
-    mode = "Playing PCM ";
+      switch (true) {
+        case sampleRate > 6143000:
+          mode += "6.1MHz";
+          break;
+        case sampleRate > 5644000:
+          mode += "5.6MHz";
+          break;
+        case sampleRate > 3071000:
+          mode += "3.0MHz";
+          break;
+        case sampleRate > 2822000:
+          mode += "2.8MHz";
+          break;
+        case sampleRate > 383900:
+          mode += "384KHz";
+          break;
+        case sampleRate > 352700:
+          mode += "352KHz";
+          break;
+        case sampleRate > 191900:
+          mode += "192KHz";
+          break;
+        case sampleRate > 176300:
+          mode += "176KHz";
+          break;
+        case sampleRate > 95900:
+          mode += "96.0KHz";
+          break;
+        case sampleRate > 88100:
+          mode += "88.2KHz";
+          break;
+        case sampleRate > 47900:
+          mode += "48.0KHz";
+          break;
+        case sampleRate > 44000:
+          mode += "44.1KHz";
+          break;
+        default:
+          mode += "UNKNOWN";
+      }
+      self.logger.info("ControllerES9018K2M::parseSampleRate:mode:" + mode);
+      defer.resolve(mode);
+    }
+    else
+      defer.resolve(null);
+  });
 
-  switch (true) {
-    case sampleRate > 6143000:
-      mode += "6.1MHz";
-      break;
-    case sampleRate > 5644000:
-      mode += "5.6MHz";
-      break;
-    case sampleRate > 3071000:
-      mode += "3.0MHz";
-      break;
-    case sampleRate > 2822000:
-      mode += "2.8MHz";
-      break;
-    case sampleRate > 383900:
-      mode += "384KHz";
-      break;
-    case sampleRate > 352700:
-      mode += "352KHz";
-      break;
-    case sampleRate > 191900:
-      mode += "192KHz";
-      break;
-    case sampleRate > 176300:
-      mode += "176KHz";
-      break;
-    case sampleRate > 95900:
-      mode += "96.0KHz";
-      break;
-    case sampleRate > 88100:
-      mode += "88.2KHz";
-      break;
-    case sampleRate > 47900:
-      mode += "48.0KHz";
-      break;
-    case sampleRate > 44000:
-      mode += "44.1KHz";
-      break;
-    default:
-      mode += "UNKNOWN";
-  }
-
-  return mode;
+  return defer.promise;
 };
 
 ControllerES9018K2M.prototype.execThdControl = function(data) {
@@ -874,13 +887,13 @@ ControllerES9018K2M.prototype.readRegister = function(regAddr) {
     wire.writeByte(regAddr, function(err) {
       self.logger.info("ControllerES9018K2M::readRegister:Write:"+  JSON.stringify(err));
     });
-    wire.readByte(function(err, res) {
-      self.logger.info("ControllerES9018K2M::readRegister:Read:"+ res);
-      defer.resolve(res);
+    wire.readByte(function(err, result) {
+      self.logger.info("ControllerES9018K2M::readRegister:Read:"+ result);
+      defer.resolve(result);
     });
   }
-  catch (e) {
-    self.logger.info("ControllerES9018K2M::readRegister:ERROR:"+  JSON.stringify(e));
+  catch (err) {
+    self.logger.info("ControllerES9018K2M::readRegister:ERROR:"+  JSON.stringify(err));
     defer.resolve(null);
   }
   /*
@@ -910,13 +923,6 @@ ControllerES9018K2M.prototype.writeRegister = function(regAddr, regVal) {
     self.logger.info("ControllerES9018K2M::writeRegister:DONE:"+  JSON.stringify(err));
   });
   /*
-  wire.writeByte(regAddr, function(err) {
-    self.logger.info("ControllerES9018K2M::writeSabreLeft1:"+  JSON.stringify(err));
-  });
-  wire.writeByte(regVal, function(err) {
-    self.logger.info("ControllerES9018K2M::writeSabreLeft2:"+  JSON.stringify(err));
-  });
-
   var i2c1 = i2cOrg.openSync(1);
   i2c1.i2cWriteSync(self.SABRE_ADDR, regAddr, regVal);
   i2c1.closeSync();

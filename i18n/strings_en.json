@@ -7,8 +7,6 @@
   "NOT_FOUND_DEVICE": "Not Found: es9018k2m",
   "DEVICE_DETECT_NOTE": "es9018k2m is detected and can be control by plugin: ",
   "DEVICE_NOT_DETECT_NOTE": "Current DAC is not an es9018k2m that supports i2c so plugin can't control status.",
-  "JITTER_LOCKED": "Jitter Eliminator is locked",
-  "JITTER_NOT_LOCKED": "Jitter Eliminator is not locked",
   "MID_BALANCE": "Balanced Left/Right Channels",
   "LOAD_DEFAULT": "Load default values",
   "UPDATE_VOLUME": "Update Volume",

@@ -47,6 +47,7 @@ ControllerES9018K2M.prototype.onStart = function() {
 
   if (self.es9018k2m) {
     self.initDevice();
+    self.applyFunction();
   }
 
   return libQ.resolve();
@@ -247,7 +248,7 @@ ControllerES9018K2M.prototype.getI18nString = function (key) {
     return self.i18nStringsDefaults[key];
 };
 
-// ES9018K2M I2C Controll Methods ------------------------------------------
+// es9018km Control Function Methods ----------------------------------------
 ControllerES9018K2M.prototype.initVariables = function() {
   var self=this;
 
@@ -310,7 +311,7 @@ ControllerES9018K2M.prototype.initDevice = function() {
 
 ControllerES9018K2M.prototype.execDeviceCheckControl = function() {
   var self=this;
-  var revision, message, deviceStatus;
+  var revision, message, sampleRate;
 
   self.logger.info("ControllerES9018K2M::execDeviceCheckControl");
   self.readRegister(self.statusReg).then (function(chipStatus) {
@@ -322,19 +323,15 @@ ControllerES9018K2M.prototype.execDeviceCheckControl = function() {
       else
         revision = 'revision W';
 
-      if (chipStatus & 0x01)
-        deviceStatus = self.getI18nString('JITTER_LOCKED');
-      else
-        deviceStatus = self.getI18nString('JITTER_NOT_LOCKED');
-    }
-    else
-      self.es9018k2m = false;
-
-    if (self.es9018k2m) {
+      // playing status
+      if (chipStatus & 0x01) {
+        sampleRate = self.parseSampleRate();
+      }
       message = self.getI18nString('FOUND_DEVICE') + '[' + revision + ']';
-      self.deviceStatus = self.getI18nString('DEVICE_DETECT_NOTE') + deviceStatus;
+      self.deviceStatus = self.getI18nString('DEVICE_DETECT_NOTE') + sampleRate;
     }
     else {
+      self.es9018k2m = false;
       message = self.getI18nString('NOT_FOUND_DEVICE');
       self.deviceStatus = self.getI18nString('DEVICE_NOT_DETECT_NOTE');
     }
@@ -365,6 +362,10 @@ ControllerES9018K2M.prototype.applyFunction = function() {
 ControllerES9018K2M.prototype.execLoadDefaultControl= function() {
   var self = this;
 
+  if (!self.es9018k2m) {
+    self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('NOT_FOUND_DEVICE'));
+    return;
+  }
   self.initVariables();
   self.initRegister();
   self.initDevice();
@@ -377,6 +378,10 @@ ControllerES9018K2M.prototype.execLoadDefaultControl= function() {
 ControllerES9018K2M.prototype.execVolumeControl = function(data) {
   var self = this;
 
+  if (!self.es9018k2m) {
+    self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('NOT_FOUND_DEVICE'));
+    return;
+  }
   self.logger.info("ControllerES9018K2M::execVolumeControl:volume TYPE:"+typeof data['volume_adjust']);
   var volume = parseInt(data['volume_adjust']);
   var ready = data['ready'];
@@ -412,6 +417,10 @@ ControllerES9018K2M.prototype.bitclear = function(reg, value) {
 ControllerES9018K2M.prototype.execDpllControl = function (data) {
   var self = this;
 
+  if (!self.es9018k2m) {
+    self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('NOT_FOUND_DEVICE'));
+    return;
+  }
   var selectedI2sDpll = data['i2sDPLL'];
   var selectedDsdDpll = data['dsdDPLL'];
 
@@ -466,6 +475,10 @@ ControllerES9018K2M.prototype.setDsdDPLL = function (selected) {
 ControllerES9018K2M.prototype.execDigitalFilterControl = function(data) {
   var self=this;
 
+  if (!self.es9018k2m) {
+    self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('NOT_FOUND_DEVICE'));
+    return;
+  }
   var selectedFir = data['fir_filter'];
   var selectedIir = data['iir_filter'];
   var selectedDeemphasis = data['deemphasis_filter'];
@@ -631,6 +644,10 @@ ControllerES9018K2M.prototype.unmuteES9018K2m  = function(){
 ControllerES9018K2M.prototype.execBalanceControl = function(data) {
   var self = this;
 
+  if (!self.es9018k2m) {
+    self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('NOT_FOUND_DEVICE'));
+    return;
+  }
   var balance = parseInt(data['balance_adjust']);
   var channel = data['channel_switch'];
   self.logger.info("ControllerES9018K2M::channel_switch:"+JSON.stringify(channel));
@@ -706,15 +723,120 @@ ControllerES9018K2M.prototype.setBalance = function(value){
 ControllerES9018K2M.prototype.execResetBalanceControl = function() {
   var self = this;
 
+  if (!self.es9018k2m) {
+    self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('NOT_FOUND_DEVICE'));
+    return;
+  }
   self.balance = 0;
   self.balanceNote = self.getI18nString('MID_BALANCE');
   self.setBalance(self.balance);
   self.updateUIConfig();
 };
 
+ControllerES9018K2M.prototype.getSampleRate = function() {
+  var self=this;
+  var DPLLNum=0;
+  var reg66, reg67, reg68, reg69;
+
+  // Reading the 4 registers of DPLL one byte at a time starting with LSB (reg 66)
+  self.readRegister(66).then (function(value) {
+    reg66 = value;
+    self.logger.info("ControllerES9018K2M::getSampleRate:reg66:" + value );
+  });
+  self.readRegister(67).then (function(value) {
+    reg67 = value;
+    self.logger.info("ControllerES9018K2M::getSampleRate:reg67:" + value );
+  });
+  self.readRegister(68).then (function(value) {
+    reg68 = value;
+    self.logger.info("ControllerES9018K2M::getSampleRate:reg68:" + value );
+  });
+  self.readRegister(69).then (function(value) {
+    reg69 = value;
+    self.logger.info("ControllerES9018K2M::getSampleRate:reg69:" + value );
+  });
+  self.logger.info("ControllerES9018K2M::getSampleRate:DONE:");
+
+  DPLLNum |= reg69;
+  DPLLNum <<=8;
+  DPLLNum |= reg68;
+  DPLLNum <<=8;
+  DPLLNum |= reg67;
+  DPLLNum <<=8;
+  DPLLNum |= reg66;
+  DPLLNum >>= 1;    // Get rid of LSB to allow for integer operation below to avoid overflow
+
+  DPLLNum *= 20;    // Calculate sampleRate for 100MHz
+  DPLLNum /= 859;
+  DPLLNum *= 2;
+  self.logger.info("ControllerES9018K2M::getSampleRate:DPLLNum :" + DPLLNum );
+
+  return DPLLNum;
+};
+
+ControllerES9018K2M.prototype.parseSampleRate = function() {
+  var self = this;
+  var mode;
+  var sampleRate;
+
+  sampleRate =self.getSampleRate();
+
+  if(sampleRate > 2822000)
+    mode = "Playing DSD ";
+  else
+    mode = "Playing PCM ";
+
+  switch (true) {
+    case sampleRate > 6143000:
+      mode += "6.1MHz";
+      break;
+    case sampleRate > 5644000:
+      mode += "5.6MHz";
+      break;
+    case sampleRate > 3071000:
+      mode += "3.0MHz";
+      break;
+    case sampleRate > 2822000:
+      mode += "2.8MHz";
+      break;
+    case sampleRate > 383900:
+      mode += "384KHz";
+      break;
+    case sampleRate > 352700:
+      mode += "352KHz";
+      break;
+    case sampleRate > 191900:
+      mode += "192KHz";
+      break;
+    case sampleRate > 176300:
+      mode += "176KHz";
+      break;
+    case sampleRate > 95900:
+      mode += "96.0KHz";
+      break;
+    case sampleRate > 88100:
+      mode += "88.2KHz";
+      break;
+    case sampleRate > 47900:
+      mode += "48.0KHz";
+      break;
+    case sampleRate > 44000:
+      mode += "44.1KHz";
+      break;
+    default:
+      mode += "UNKNOWN";
+  }
+
+  return mode;
+};
+
 ControllerES9018K2M.prototype.execThdControl = function(data) {
   var self = this;
 
+  if (!self.es9018k2m) {
+    self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('NOT_FOUND_DEVICE'));
+    return;
+  }
   var thdControl = data['thd_onOff'];
   self.logger.info("ControllerES9018K2M::execThdControl:"+JSON.stringify(thdValues));
   if (thdControl) {
@@ -741,6 +863,7 @@ ControllerES9018K2M.prototype.execThdControl = function(data) {
 
 };
 
+// es9018km i2c Control Methods ---------------------------------------------
 ControllerES9018K2M.prototype.readRegister = function(regAddr) {
   var self=this;
   var defer = libQ.defer();

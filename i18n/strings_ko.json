@@ -7,8 +7,6 @@
   "NOT_FOUND_DEVICE": "es9018k2m 디바이스 못찾음",
   "DEVICE_DETECT_NOTE": "es9018k2m이 확인되어 제어 가능: ",
   "DEVICE_NOT_DETECT_NOTE": "현재 DAC는 i2c를 지원하는 es9018k2m 이 아닙니다. 플러그인이 상태 제어를 할수 없습니다.",
-  "JITTER_LOCKED": "지터 제거 동작",
-  "JITTER_NOT_LOCKED": "지터 제거 비동작",
   "MID_BALANCE": "좌/우 동일",
   "LOAD_DEFAULT": "기본값으로 변경",
   "UPDATE_VOLUME": "볼륨 변경",

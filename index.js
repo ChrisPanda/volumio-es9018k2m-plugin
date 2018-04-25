@@ -772,7 +772,7 @@ ControllerES9018K2M.prototype.getSampleRate = function() {
           nDPLL *= 20;    // Calculate for 100MHz crystal
           nDPLL /= 859;
           nDPLL *= 2;
-          defer.resolve(DPLLNum);
+          defer.resolve(nDPLL);
           self.logger.info("ControllerES9018K2M::getSampleRate:nDPLL:" + nDPLL);
         });
       });

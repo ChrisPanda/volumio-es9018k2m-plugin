@@ -315,7 +315,7 @@ ControllerES9018K2M.prototype.execDeviceCheckControl = function() {
 
   self.logger.info("ControllerES9018K2M::execDeviceCheckControl");
   self.readRegister(self.statusReg).then (function(chipStatus) {
-    if ((chipStatus & 0x1C) === 16) {
+    if ((chipStatus !== null) && (chipStatus & 0x1C) === 16) {
       self.es9018k2m = true;
       self.logger.info("ControllerES9018K2M::execDeviceCheckControl:chipStatus:" + chipStatus);
       if (chipStatus & 0x20)
@@ -324,9 +324,10 @@ ControllerES9018K2M.prototype.execDeviceCheckControl = function() {
         revision = 'revision W';
 
       // playing status
-      if (chipStatus & 0x01) {
+      if (chipStatus & 0x01)
         sampleRate = self.parseSampleRate();
-      }
+      else
+        sampleRate = '';
       message = self.getI18nString('FOUND_DEVICE') + '[' + revision + ']';
       self.deviceStatus = self.getI18nString('DEVICE_DETECT_NOTE') + sampleRate;
     }
@@ -880,6 +881,7 @@ ControllerES9018K2M.prototype.readRegister = function(regAddr) {
   }
   catch (e) {
     self.logger.info("ControllerES9018K2M::readRegister:ERROR:"+  JSON.stringify(e));
+    defer.resolve(null);
   }
   /*
   try {

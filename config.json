@@ -1,8 +1,4 @@
 {
-  "enabled": {
-    "type": "boolean",
-    "value": false
-  },
   "volumeLevel": {
     "type": "number",
     "value": 90

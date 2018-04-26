@@ -465,34 +465,53 @@
           "element": "switch",
           "description": "default: Off",
           "label": "TRANSLATE.UI.THD_ON_OFF",
-          "value": true
+          "value": false
         },
         {
           "id": "thd_adjust",
           "element": "equalizer",
           "label": "TRANSLATE.UI.THD_ADJUST",
           "description": "",
-          "visibleIf": {"field": "thd_onOff", "value": true},
           "config": {
             "orientation": "horizontal",
             "bars": [
               {
                 "min": 0,
-                "max": 65535,
+                "max": 255,
                 "step": 1,
-                "value": 65535,
+                "value": 0,
                 "ticksLabels": [
-                  "TRANSLATE.UI.THD_2_COEFFICIENT"
+                  "TRANSLATE.UI.THD_2_COEFFICIENT_LSB"
                 ],
                 "tooltip": "always"
               },
               {
                 "min": 0,
-                "max": 65535,
+                "max": 255,
                 "step": 1,
-                "value": 65535,
+                "value": 0,
                 "ticksLabels": [
-                  "TRANSLATE.UI.THD_3_COEFFICIENT"
+                  "TRANSLATE.UI.THD_2_COEFFICIENT_MSB"
+                ],
+                "tooltip": "always"
+              },
+              {
+                "min": 0,
+                "max": 255,
+                "step": 1,
+                "value": 0,
+                "ticksLabels": [
+                  "TRANSLATE.UI.THD_3_COEFFICIENT_LSB"
+                ],
+                "tooltip": "always"
+              },
+              {
+                "min": 0,
+                "max": 255,
+                "step": 1,
+                "value": 0,
+                "ticksLabels": [
+                  "TRANSLATE.UI.THD_3_COEFFICIENT_MSB"
                 ],
                 "tooltip": "always"
               }

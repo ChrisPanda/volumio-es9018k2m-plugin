@@ -248,7 +248,7 @@ ControllerES9018K2M.prototype.getI18nString = function (key) {
     return self.i18nStringsDefaults[key];
 };
 
-// es9018km Control Function Methods ----------------------------------------
+// es9018km Control Methods -------------------------------------------------
 ControllerES9018K2M.prototype.initVariables = function() {
   var self=this;
 
@@ -411,14 +411,6 @@ ControllerES9018K2M.prototype.execVolumeControl = function(data) {
 
     self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('UPDATE_VOLUME'));
   }
-};
-
-ControllerES9018K2M.prototype.bitset = function(reg, value) {
-  return reg |= (1 << value);
-};
-
-ControllerES9018K2M.prototype.bitclear = function(reg, value) {
-  return reg &= ~(1 << value);
 };
 
 ControllerES9018K2M.prototype.execDpllControl = function (data) {
@@ -625,26 +617,26 @@ ControllerES9018K2M.prototype.setVolume = function(regVal) {
   self.logger.info("ControllerES9018K2M::setVolume:"+value);
   self.logger.info("ControllerES9018K2M::setVolumeLBAL:"+self.lBal);
   self.logger.info("ControllerES9018K2M::setVolumeRBAL:"+self.rBal);
-  self.writeRegister(15, value + self.lBal); // set up volume in Channel 1 (Left)
-  self.writeRegister(16, value + self.rBal); // set up volume in Channel 1 (Right)
+  self.writeRegister(15, value + self.lBal); // left channel
+  self.writeRegister(16, value + self.rBal); // right channel
 
   if (self.messageOn)
-    self.commandRouter.pushToastMessage('info', self.serviceName, "Adjust Volume");
+    self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('APPLY_VOLUME'));
 };
 
 ControllerES9018K2M.prototype.muteES9018K2m  = function(){
   var self = this;
 
-  self.reg7=self.bitset(self.reg7, 0);               // Mute Channel 1
-  self.reg7=self.bitset(self.reg7, 1);               // Mute Channel 2
+  self.reg7=self.bitset(self.reg7, 0);  // mute channel 1
+  self.reg7=self.bitset(self.reg7, 1);  // mute channel 2
   self.writeRegister(7, self.reg7);
 };
 
 ControllerES9018K2M.prototype.unmuteES9018K2m  = function(){
   var self = this;
 
-  self.reg7=self.bitclear(self.reg7, 0);             // Unmute Channel 1
-  self.reg7=self.bitclear(self.reg7, 1);             // Unmute Channel 2
+  self.reg7=self.bitclear(self.reg7, 0);  // unmute channel 1
+  self.reg7=self.bitclear(self.reg7, 1);  // Unmute Channel 2
   self.writeRegister(7, self.reg7);
 };
 
@@ -717,7 +709,7 @@ ControllerES9018K2M.prototype.setBalance = function(value){
   }
   self.balanceNote = result;
 
-  // Adjust volume
+  // apply volume with balance
   self.setVolume(self.volumeLevel);
   self.updateUIConfig();
 
@@ -746,7 +738,7 @@ ControllerES9018K2M.prototype.getSampleRate = function() {
   var nDPLL=0;
   var reg66, reg67, reg68, reg69;
 
-  // read DPLL registers one byte into LSB
+  // read DPLL registers(66~69) from LSB
   self.readRegister(66).then (function(value1) {
     reg66 = value1;
     self.logger.info("ControllerES9018K2M::getSampleRate:reg66:" + value1);
@@ -769,7 +761,7 @@ ControllerES9018K2M.prototype.getSampleRate = function() {
           nDPLL |= reg66;
           nDPLL >>= 1;    // Get rid of LSB to allow for integer operation below to avoid overflow
 
-          nDPLL *= 20;    // Calculate for 100MHz crystal
+          nDPLL *= 20;    // 100MHz crystal
           nDPLL /= 859;
           nDPLL *= 2;
           defer.resolve(nDPLL);
@@ -856,14 +848,14 @@ ControllerES9018K2M.prototype.execThdControl = function(data) {
   self.logger.info("ControllerES9018K2M::execThdControl:"+JSON.stringify(thdValues));
   if (thdControl) {
     var thdValues = data['thd_adjust'];
-    var reg22Lsb = thdValues[0] & 0x00FF;
-    var reg23Msb = (thdValues[0] & 0xFF00) >> 8;
-    var reg24Lsb = thdValues[1] & 0x00FF;
-    var reg25Msb = (thdValues[1] & 0xFF00) >> 8;
+    var reg22Lsb = thdValues[0];
+    var reg23Msb = thdValues[1];
+    var reg24Lsb = thdValues[2];
+    var reg25Msb = thdValues[3];
     self.logger.info("ControllerES9018K2M::execThdControl:reg22:"+reg22Lsb);
     self.logger.info("ControllerES9018K2M::execThdControl:reg23:"+reg23Msb);
-    reg22Lsb = 0; // test!!
-    reg24Lsb = 0;
+    self.logger.info("ControllerES9018K2M::execThdControl:reg24:"+reg24Lsb);
+    self.logger.info("ControllerES9018K2M::execThdControl:reg25:"+reg25Msb);
 
     self.writeRegister(22, reg22Lsb);
     self.writeRegister(23, reg23Msb);
@@ -872,15 +864,25 @@ ControllerES9018K2M.prototype.execThdControl = function(data) {
     self.writeRegister(13, 0x00); // enable THD compensation
 
     self.enableTHD = true;
+    self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('THD_COMPENSATION_ON'));
   }
   else {
     self.writeRegister(13, 0x40); // disable THD compensation
     self.enableTHD = false;
-  }
 
+    self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('THD_COMPENSATION_OFF'));
+  }
 };
 
 // es9018km i2c Control Methods ---------------------------------------------
+ControllerES9018K2M.prototype.bitset = function(reg, value) {
+  return reg |= (1 << value);
+};
+
+ControllerES9018K2M.prototype.bitclear = function(reg, value) {
+  return reg &= ~(1 << value);
+};
+
 ControllerES9018K2M.prototype.readRegister = function(regAddr) {
   var self=this;
   var defer = libQ.defer();
@@ -888,31 +890,18 @@ ControllerES9018K2M.prototype.readRegister = function(regAddr) {
   try {
     var wire = new i2c(self.deviceAddress, {device: '/dev/i2c-1'});
     wire.writeByte(regAddr, function(err) {
-      self.logger.info("ControllerES9018K2M::readRegister:Write:"+  JSON.stringify(err));
+      self.logger.info("ControllerES9018K2M::readRegister:writeByte error:"+ JSON.stringify(err));
     });
     wire.readByte(function(err, result) {
-      self.logger.info("ControllerES9018K2M::readRegister:Read:"+ result);
+      if (err)
+        self.logger.info("ControllerES9018K2M::readRegister:readByte error:"+JSON.stringify(err));
       defer.resolve(result);
     });
   }
   catch (err) {
-    self.logger.info("ControllerES9018K2M::readRegister:ERROR:"+  JSON.stringify(err));
+    self.logger.info("ControllerES9018K2M::readRegister error:"+ JSON.stringify(err));
     defer.resolve(null);
   }
-  /*
-  try {
-    var buffer = new Buffer(1);
-
-    buffer[0] = regAddr;
-    i2c1.i2cWriteSync(self.deviceAddress, 1, buffer);
-    i2c1.i2cReadSync(self.deviceAddress, 1, buffer);
-    self.logger.info("ControllerES9018K2M::I2C:READ:"+ buffer);
-    defer.resolve(buffer);
-  } catch (e) {
-    self.logger.info("ControllerES9018K2M::reaRegisterCatch:ERR:"+  JSON.stringify(e));
-  }
-  i2c1.closeSync();
-  */
 
   return defer.promise;
 };
@@ -923,11 +912,7 @@ ControllerES9018K2M.prototype.writeRegister = function(regAddr, regVal) {
   self.logger.info("ControllerES9018K2M::writeRegister:"+regVal);
   var wire = new i2c(self.deviceAddress, {device: '/dev/i2c-1'});
   wire.writeBytes(regAddr, [regVal], function(err) {
-    self.logger.info("ControllerES9018K2M::writeRegister:DONE:"+  JSON.stringify(err));
+    if (err)
+      self.logger.info("ControllerES9018K2M::writeRegister error:"+  JSON.stringify(err));
   });
-  /*
-  var i2c1 = i2cOrg.openSync(1);
-  i2c1.i2cWriteSync(self.SABRE_ADDR, regAddr, regVal);
-  i2c1.closeSync();
-  */
 };

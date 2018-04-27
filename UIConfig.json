@@ -18,6 +18,10 @@
           "onClick": {
             "type": "emit",
             "message": "callMethod",
+            "askForConfirm": {
+              "title": "TRANSLATE.UI.CONFIRM_RESET",
+              "message": "TRANSLATE.UI.CONFIRM_RESET_MESSAGE"
+            },
             "data": {
               "endpoint": "miscellanea/es9018k2m_ctl",
               "method": "execDeviceCheckControl",

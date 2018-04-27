@@ -25,6 +25,8 @@
     "MUTE_ON_OFF": "정상/음소거",
     "DEVICE_STATUS": "디바이스 상태",
     "DEVICE_RESET": "디바이스 초기화",
+    "CONFIRM_RESET": "확인",
+    "CONFIRM_RESET_MESSAGE":  "초기화 하시겠습니까?",
     "THD": "고급 설정: THD(전고조파 왜율)",
     "THD_ADJUST": "THD 보상",
     "THD_ON_OFF": "THD 보상 활성/비활성",

@@ -25,6 +25,8 @@
     "MUTE_ON_OFF": "Normal/Mute",
     "DEVICE_STATUS": "Device Status",
     "DEVICE_RESET": "Device Reset",
+    "CONFIRM_RESET": "Confirm",
+    "CONFIRM_RESET_MESSAGE": "Are you sure to reset?",
     "THD": "Advanced Setting: THD(Total Harmonic Distortio)",
     "THD_ADJUST": "THD Compensation",
     "THD_ON_OFF": "THD Compensation On/Off",

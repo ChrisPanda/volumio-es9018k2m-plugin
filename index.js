@@ -694,15 +694,15 @@ ControllerES9018K2M.prototype.setBalance = function(value){
     result = self.getI18nString('BALANCE') + ": ";
     if (value > self.centerBalance) {
       // adjusting balance to right channel
-      self.rBal =0;
-      self.lBal =value - self.centerBalance;  // reduce left channel level
+      self.rBal = 0;
+      self.lBal = value - self.centerBalance;  // reduce left channel level
       result += (self.lBal/2).toString();
       result += "dB " + self.getI18nString('RIGHT');
     }
     else {
       // adjusting balance to left channel
-      self.lBal=0;
-      self.rBal=self.centerBalance - value;    // reduce right channel level
+      self.lBal = 0;
+      self.rBal = self.centerBalance - value;    // reduce right channel level
       result += (self.rBal/2).toString();
       result += "dB "+ self.getI18nString('LEFT');
     }
@@ -845,7 +845,7 @@ ControllerES9018K2M.prototype.execThdControl = function(data) {
     return;
   }
   var thdControl = data['thd_onOff'];
-  self.logger.info("ControllerES9018K2M::execThdControl:"+JSON.stringify(thdValues));
+  self.logger.info("ControllerES9018K2M::execThdControl:"+thdControl);
   if (thdControl) {
     var thdValues = data['thd_adjust'];
     var reg22Lsb = thdValues[0];
@@ -910,9 +910,14 @@ ControllerES9018K2M.prototype.writeRegister = function(regAddr, regVal) {
   var self=this;
 
   self.logger.info("ControllerES9018K2M::writeRegister:"+regVal);
-  var wire = new i2c(self.deviceAddress, {device: '/dev/i2c-1'});
-  wire.writeBytes(regAddr, [regVal], function(err) {
-    if (err)
-      self.logger.info("ControllerES9018K2M::writeRegister error:"+  JSON.stringify(err));
-  });
+  try {
+    var wire = new i2c(self.deviceAddress, {device: '/dev/i2c-1'});
+    wire.writeBytes(regAddr, [regVal], function(err) {
+      if (err)
+        self.logger.info("ControllerES9018K2M::writeRegister error:"+  JSON.stringify(err));
+    });
+  }
+  catch (err) {
+    self.logger.info("ControllerES9018K2M::writeRegister error:"+ JSON.stringify(err));
+  }
 };

@@ -289,7 +289,6 @@ ControllerES9018K2M.prototype.initRegister = function()
   self.reg5=0x68;  // Automute level.
   self.reg7=0x80;  // General for fast/slow roll-off, iir and mute/unmute
   self.reg12=0x5A; // DPLL (i2s and DSD)
-  self.reg14=0x8A; // Soft Start
   self.reg21=0x00; // GPIO and OSF(Oversampling) Bypass
 };
 
@@ -301,10 +300,6 @@ ControllerES9018K2M.prototype.initDevice = function() {
   self.writeRegister(0, self.reg0);    // System Settings
   self.writeRegister(4, self.reg4);    // Automute
   self.writeRegister(5, self.reg5);    // Automute Level
-  //self.writeRegister(8, self.reg8);  // GPIO default configuration
-  //self.writeRegister(9, self.reg9);  // Master Mode. Default: OFF
-  //self.writeRegister(11, self.reg11);  // stereo
-  self.writeRegister(14, self.reg14);  // Soft Start Settings
   self.setVolume(self.volumeLevel);    // Startup volume level
   self.unmuteES9018K2m();
 };
@@ -313,11 +308,9 @@ ControllerES9018K2M.prototype.execDeviceCheckControl = function() {
   var self=this;
   var revision, message, checkSampleRate=false;
 
-  self.logger.info("ControllerES9018K2M::execDeviceCheckControl");
   self.readRegister(self.statusReg).then (function(chipStatus) {
     if ((chipStatus !== null) && (chipStatus & 0x1C) === 16) {
       self.es9018k2m = true;
-      self.logger.info("ControllerES9018K2M::execDeviceCheckControl:chipStatus:" + chipStatus);
       if (chipStatus & 0x20)
         revision = 'revision V';
       else
@@ -392,9 +385,6 @@ ControllerES9018K2M.prototype.execVolumeControl = function(data) {
   self.logger.info("ControllerES9018K2M::execVolumeControl:volume TYPE:"+typeof data['volume_adjust']);
   var volume = parseInt(data['volume_adjust']);
   var ready = data['ready'];
-
-  self.logger.info("ControllerES9018K2M::execVolumeControl:volume:"+volume);
-  self.logger.info("ControllerES9018K2M::execVolumeControl:ready:"+ready);
 
   self.setVolume(volume);
   if (self.ready !== ready) {
@@ -494,8 +484,7 @@ ControllerES9018K2M.prototype.setFirFilter = function(selected){
   var result;
 
   self.logger.info("ControllerES9018K2M::setFirFilter:"+JSON.stringify(selected));
-  self.logger.info("ControllerES9018K2M::REG7:"+self.reg7);
-  self.logger.info("ControllerES9018K2M::REG21:"+self.reg21);
+  self.logger.info("ControllerES9018K2M::REG7:"+self.reg7+", REG21:"+self.reg21);
   self.fir = selected.value;
   self.firLabel = selected.label;
   switch (selected.value) {
@@ -527,15 +516,13 @@ ControllerES9018K2M.prototype.setFirFilter = function(selected){
   }
   result = "FIR Filter: "+ selected.label;
 
-  self.logger.info("ControllerES9018K2M::REG7:AFTER:"+self.reg7);
-  self.logger.info("ControllerES9018K2M::REG21:"+self.reg21);
+  self.logger.info("ControllerES9018K2M::REG7:AFTER:"+self.reg7+", REG21:"+self.reg21);
 
   if (self.messageOn)
     self.commandRouter.pushToastMessage('info', self.serviceName, result);
 
   self.config.set('fir', self.fir);
   self.config.set('firLabel', self.firLabel);
-  self.logger.info("ControllerES9018K2M::setFirFilter:RESULT:"+result);
 };
 
 ControllerES9018K2M.prototype.setIirFilter = function(selected) {
@@ -586,7 +573,6 @@ ControllerES9018K2M.prototype.setIirFilter = function(selected) {
 
   self.config.set('iir', self.iir);
   self.config.set('iirLabel', self.iirLabel);
-  self.logger.info("ControllerES9018K2M::setIirFilter:RESULT:"+result);
 };
 
 ControllerES9018K2M.prototype.setDeemphasisFilter = function(selected) {
@@ -596,7 +582,7 @@ ControllerES9018K2M.prototype.setDeemphasisFilter = function(selected) {
   self.deemphasis = selected.value;
   self.deemphasisLabel = selected.label;
 
-  // off:0x4A, auto: 0x8A, 32K:0x0A, 44k:0x1A, 48k:0x2a, reserved: 0x3A
+  // off:0x4A, 32K:0x0A, 44k:0x1A, 48k:0x2a, reserved: 0x3A
   self.writeRegister(6, selected.value);
 
   result = "Deemphasis: " + selected.label;
@@ -606,7 +592,6 @@ ControllerES9018K2M.prototype.setDeemphasisFilter = function(selected) {
 
   self.config.set('deemphasis', self.deemphasis);
   self.config.set('deemphasisLabel', self.deemphasisLabel);
-  self.logger.info("ControllerES9018K2M::setDeemphasisFilter:RESULT:"+result);
 };
 
 // lBal and rBal are for adjusting for Balance for left and right channels
@@ -615,8 +600,7 @@ ControllerES9018K2M.prototype.setVolume = function(regVal) {
 
   var value = 100 - regVal;
   self.logger.info("ControllerES9018K2M::setVolume:"+value);
-  self.logger.info("ControllerES9018K2M::setVolumeLBAL:"+self.lBal);
-  self.logger.info("ControllerES9018K2M::setVolumeRBAL:"+self.rBal);
+  self.logger.info("ControllerES9018K2M::setVolume:LBAL:"+self.lBal+", RVAL:"+self.rBal);
   self.writeRegister(15, value + self.lBal); // left channel
   self.writeRegister(16, value + self.rBal); // right channel
 
@@ -714,9 +698,7 @@ ControllerES9018K2M.prototype.setBalance = function(value){
   self.updateUIConfig();
 
   if (self.messageOn)
-    self.commandRouter.pushToastMessage('info', self.serviceName, "Balance Adjust");
-
-  self.logger.info("ControllerES9018K2M::setBalance:RESULT:"+result);
+    self.commandRouter.pushToastMessage('info', self.serviceName, result);
 };
 
 ControllerES9018K2M.prototype.execResetBalanceControl = function() {
@@ -741,16 +723,12 @@ ControllerES9018K2M.prototype.getSampleRate = function() {
   // read DPLL registers(66~69) from LSB
   self.readRegister(66).then (function(value1) {
     reg66 = value1;
-    self.logger.info("ControllerES9018K2M::getSampleRate:reg66:" + value1);
     self.readRegister(67).then (function(value2) {
       reg67 = value2;
-      self.logger.info("ControllerES9018K2M::getSampleRate:reg67:" + value2);
       self.readRegister(68).then (function(value3) {
         reg68 = value3;
-        self.logger.info("ControllerES9018K2M::getSampleRate:reg68:" + value3);
         self.readRegister(69).then (function(value4) {
           reg69 = value4;
-          self.logger.info("ControllerES9018K2M::getSampleRate:reg69:" + value4);
 
           nDPLL |= reg69;
           nDPLL <<=8;

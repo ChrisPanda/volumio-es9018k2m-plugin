@@ -159,7 +159,6 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
     uiconf.sections[4].content[1].value =
         {value: self.dsdDPLL, label: self.dsdLabelDPLL};
 
-    uiconf.sections[5].content[0].value = self.enableTHD;
     defer.resolve(uiconf);
 
     // apply saved configuration data to es9018k2m

@@ -82,7 +82,6 @@ ControllerES9018K2M.prototype.setConf = function(varName, varValue) {
 ControllerES9018K2M.prototype.setUIConfig = function(data) {
   var self = this;
 
-  self.logger.info("ES9018K2M:setUIConfig");
   var uiconf = fs.readJsonSync(__dirname + '/UIConfig.json');
 
   return libQ.resolve();
@@ -132,8 +131,6 @@ ControllerES9018K2M.prototype.getUIConfig = function() {
   var self = this;
   var defer = libQ.defer();
   var lang_code = self.commandRouter.sharedVars.get('language_code');
-
-  self.logger.info("ES9018K2M:getUIConfig:");
 
   self.commandRouter.i18nJson(__dirname+'/i18n/strings_' + lang_code + '.json',
       __dirname + '/i18n/strings_en.json',
@@ -382,7 +379,6 @@ ControllerES9018K2M.prototype.execVolumeControl = function(data) {
     self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('NOT_FOUND_DEVICE'));
     return;
   }
-  self.logger.info("ControllerES9018K2M::execVolumeControl:volume TYPE:"+typeof data['volume_adjust']);
   var volume = parseInt(data['volume_adjust']);
   var ready = data['ready'];
 
@@ -430,7 +426,6 @@ ControllerES9018K2M.prototype.setI2sDPLL = function (selected) {
   self.i2sLabelDPLL = selected.label;
   self.reg12 &= 0x0F;
   self.reg12 |= selected.value;
-  self.logger.info("ControllerES9018K2M::setI2sDPLL:reg12:"+self.reg12);
   self.writeRegister(0x0C, self.reg12);
 
   if (self.messageOn)
@@ -450,8 +445,6 @@ ControllerES9018K2M.prototype.setDsdDPLL = function (selected) {
   self.dsdLabelDPLL= selected.label;
   self.reg12 &= 0xF0;
   self.reg12 |= selected.value;
-
-  self.logger.info("ControllerES9018K2M::setDsdDPLL:reg12:"+self.reg12);
   self.writeRegister(0x0C, self.reg12);
 
   if (self.messageOn)
@@ -483,8 +476,6 @@ ControllerES9018K2M.prototype.setFirFilter = function(selected){
   var self=this;
   var result;
 
-  self.logger.info("ControllerES9018K2M::setFirFilter:"+JSON.stringify(selected));
-  self.logger.info("ControllerES9018K2M::REG7:"+self.reg7+", REG21:"+self.reg21);
   self.fir = selected.value;
   self.firLabel = selected.label;
   switch (selected.value) {
@@ -516,8 +507,6 @@ ControllerES9018K2M.prototype.setFirFilter = function(selected){
   }
   result = "FIR Filter: "+ selected.label;
 
-  self.logger.info("ControllerES9018K2M::REG7:AFTER:"+self.reg7+", REG21:"+self.reg21);
-
   if (self.messageOn)
     self.commandRouter.pushToastMessage('info', self.serviceName, result);
 
@@ -529,7 +518,6 @@ ControllerES9018K2M.prototype.setIirFilter = function(selected) {
   var self=this;
   var result;
 
-  self.logger.info("ControllerES9018K2M::setIirFilter:"+JSON.stringify(selected));
   self.iir = selected.value;
   self.iirLabel = selected.label;
   switch(selected) {
@@ -599,8 +587,6 @@ ControllerES9018K2M.prototype.setVolume = function(regVal) {
   var self=this;
 
   var value = 100 - regVal;
-  self.logger.info("ControllerES9018K2M::setVolume:"+value);
-  self.logger.info("ControllerES9018K2M::setVolume:LBAL:"+self.lBal+", RVAL:"+self.rBal);
   self.writeRegister(15, value + self.lBal); // left channel
   self.writeRegister(16, value + self.rBal); // right channel
 
@@ -633,7 +619,6 @@ ControllerES9018K2M.prototype.execBalanceControl = function(data) {
   }
   var balance = parseInt(data['balance_adjust']);
   var channel = data['channel_switch'];
-  self.logger.info("ControllerES9018K2M::channel_switch:"+JSON.stringify(channel));
 
   if (self.balance !== balance) {
     self.balance = balance;
@@ -655,7 +640,6 @@ ControllerES9018K2M.prototype.execBalanceControl = function(data) {
 ControllerES9018K2M.prototype.switchChannel = function() {
   var self = this;
 
-  self.logger.info("ControllerES9018K2M::switchChannel:"+self.channel);
   if (self.channel)
     self.writeRegister(11, 0x02);
   else
@@ -667,7 +651,6 @@ ControllerES9018K2M.prototype.setBalance = function(value){
   var result;
 
   value += self.centerBalance;
-  self.logger.info("ControllerES9018K2M::setBalance:"+value);
 
   if (value === self.centerBalance) {         // balanced channel
     self.lBal=0;
@@ -711,6 +694,7 @@ ControllerES9018K2M.prototype.execResetBalanceControl = function() {
   self.balance = 0;
   self.balanceNote = self.getI18nString('MID_BALANCE');
   self.setBalance(self.balance);
+  self.config.set('balance', self.balance);
   self.updateUIConfig();
 };
 
@@ -737,13 +721,12 @@ ControllerES9018K2M.prototype.getSampleRate = function() {
           nDPLL |= reg67;
           nDPLL <<=8;
           nDPLL |= reg66;
-          nDPLL >>= 1;    // Get rid of LSB to allow for integer operation below to avoid overflow
+          nDPLL >>= 1;    // remove LSB for avoiding overflow
 
           nDPLL *= 20;    // 100MHz crystal
           nDPLL /= 859;
           nDPLL *= 2;
           defer.resolve(nDPLL);
-          self.logger.info("ControllerES9018K2M::getSampleRate:nDPLL:" + nDPLL);
         });
       });
     });
@@ -805,7 +788,6 @@ ControllerES9018K2M.prototype.parseSampleRate = function() {
         default:
           mode += "UNKNOWN";
       }
-      self.logger.info("ControllerES9018K2M::parseSampleRate:mode:" + mode);
       defer.resolve(mode);
     }
     else
@@ -823,17 +805,12 @@ ControllerES9018K2M.prototype.execThdControl = function(data) {
     return;
   }
   var thdControl = data['thd_onOff'];
-  self.logger.info("ControllerES9018K2M::execThdControl:"+thdControl);
   if (thdControl) {
     var thdValues = data['thd_adjust'];
     var reg22Lsb = thdValues[0];
     var reg23Msb = thdValues[1];
     var reg24Lsb = thdValues[2];
     var reg25Msb = thdValues[3];
-    self.logger.info("ControllerES9018K2M::execThdControl:reg22:"+reg22Lsb);
-    self.logger.info("ControllerES9018K2M::execThdControl:reg23:"+reg23Msb);
-    self.logger.info("ControllerES9018K2M::execThdControl:reg24:"+reg24Lsb);
-    self.logger.info("ControllerES9018K2M::execThdControl:reg25:"+reg25Msb);
 
     self.writeRegister(22, reg22Lsb);
     self.writeRegister(23, reg23Msb);
@@ -868,16 +845,16 @@ ControllerES9018K2M.prototype.readRegister = function(regAddr) {
   try {
     var wire = new i2c(self.deviceAddress, {device: '/dev/i2c-1'});
     wire.writeByte(regAddr, function(err) {
-      self.logger.info("ControllerES9018K2M::readRegister:writeByte error:"+ JSON.stringify(err));
+      self.logger.error("ControllerES9018K2M::readRegister:writeByte error:"+ JSON.stringify(err));
     });
     wire.readByte(function(err, result) {
       if (err)
-        self.logger.info("ControllerES9018K2M::readRegister:readByte error:"+JSON.stringify(err));
+        self.logger.error("ControllerES9018K2M::readRegister:readByte error:"+JSON.stringify(err));
       defer.resolve(result);
     });
   }
   catch (err) {
-    self.logger.info("ControllerES9018K2M::readRegister error:"+ JSON.stringify(err));
+    self.logger.error("ControllerES9018K2M::readRegister error:"+ JSON.stringify(err));
     defer.resolve(null);
   }
 
@@ -887,15 +864,14 @@ ControllerES9018K2M.prototype.readRegister = function(regAddr) {
 ControllerES9018K2M.prototype.writeRegister = function(regAddr, regVal) {
   var self=this;
 
-  self.logger.info("ControllerES9018K2M::writeRegister:"+regVal);
   try {
     var wire = new i2c(self.deviceAddress, {device: '/dev/i2c-1'});
     wire.writeBytes(regAddr, [regVal], function(err) {
       if (err)
-        self.logger.info("ControllerES9018K2M::writeRegister error:"+  JSON.stringify(err));
+        self.logger.error("ControllerES9018K2M::writeRegister error:"+  JSON.stringify(err));
     });
   }
   catch (err) {
-    self.logger.info("ControllerES9018K2M::writeRegister error:"+ JSON.stringify(err));
+    self.logger.error("ControllerES9018K2M::writeRegister error:"+ JSON.stringify(err));
   }
 };

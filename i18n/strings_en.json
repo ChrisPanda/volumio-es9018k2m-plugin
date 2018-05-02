@@ -12,6 +12,8 @@
   "LOAD_DEFAULT": "Load default values",
   "UPDATE_VOLUME": "Update Volume",
   "SWITCH_CHANNEL": "Switch Channel: ",
+  "THD_COMPENSATION_ON": "Applied THD Compensation",
+  "THD_COMPENSATION_OFF": "THD Compensation Off",
   "UI": {
     "CONFIG": "configuration",
     "DEVICE": "Device",
@@ -34,8 +36,6 @@
     "THD_2_COEFFICIENT_MSB": "Second Compensation MSB Coefficients",
     "THD_3_COEFFICIENT_LSB": "Third Compensation LSB Coefficients",
     "THD_3_COEFFICIENT_MSB": "Third Compensation LSB Coefficients",
-    "THD_COMPENSATION_ON": "Applied THD Compensation",
-    "THD_COMPENSATION_OFF": "THD Compensation Off",
     "THD_NOTE": "User can measure optimal THD-N with changing this parameters. output is [input+(input^2) x second_compensation_constant + (input^3) x third_compensation_constant]",
     "DIGITAL_FILTER": "Digital Filter",
     "DE_EMPHASIS_FILTER": "Deemphasis",

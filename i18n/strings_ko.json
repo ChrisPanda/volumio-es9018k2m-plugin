@@ -12,6 +12,8 @@
   "LOAD_DEFAULT": "기본값으로 변경",
   "UPDATE_VOLUME": "볼륨 변경",
   "SWITCH_CHANNEL": "채널 변경: ",
+  "THD_COMPENSATION_ON": "THD 보상 적용됨",
+  "THD_COMPENSATION_OFF": "THD 보상 끔",
   "UI": {
     "CONFIG": "설정",
     "DEVICE": "디바이스",
@@ -34,8 +36,7 @@
     "THD_2_COEFFICIENT_MSB": "2차 보상 MSB 상수",
     "THD_3_COEFFICIENT_LSB": "3차 보상 LSB 상수",
     "THD_3_COEFFICIENT_MSB": "3차 보상 MSB 상수",
-    "THD_COMPENSATION_ON": "THD 보상 적용됨",
-    "THD_COMPENSATION_OFF": "THD 보상 끔",
+
     "THD_NOTE": "이 상수값들을 변경하여 최적의 THD+N을 측정 가능. 출력은 [입력+(입력^2) x (2차 보상상수) + (입력^3) x (3차 보상상수)]",
     "DIGITAL_FILTER": "디지털 필터",
     "DE_EMPHASIS_FILTER": "Deemphasis 필터",

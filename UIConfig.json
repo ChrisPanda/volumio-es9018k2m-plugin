@@ -152,7 +152,7 @@
             "type": "emit",
             "message": "callMethod",
             "data": {
-              "endpoint": "miscellanea/es9018k2m_ctl",
+              "endpoint": "miscellanea/es9018k2m_control",
               "method": "execResetBalanceControl",
               "data": ""
             }
@@ -169,7 +169,7 @@
       "description": "",
       "onSave": {
         "type": "controller",
-        "endpoint": "miscellanea/es9018k2m_ctl",
+        "endpoint": "miscellanea/es9018k2m_control",
         "method": "execDigitalFilterControl"
       },
       "saveButton": {
@@ -280,7 +280,7 @@
       "description": "TRANSLATE.UI.DPLL_NOTE",
       "onSave": {
         "type": "controller",
-        "endpoint": "miscellanea/es9018k2m_ctl",
+        "endpoint": "miscellanea/es9018k2m_control",
         "method": "execDpllControl"
       },
       "saveButton": {
@@ -454,7 +454,7 @@
       "icon": "fa-cogs",
       "onSave": {
         "type": "controller",
-        "endpoint": "miscellanea/es9018k2m_ctl",
+        "endpoint": "miscellanea/es9018k2m_control",
         "method": "execThdControl"
       },
       "saveButton": {

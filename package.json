@@ -1,5 +1,5 @@
 {
-  "name": "ES9018K2M_Control",
+  "name": "es9018k2m_control",
   "version": "0.1.0",
   "description": "i2c ES9018K2M function control Plugin for Volumio2",
   "main": "index.js",

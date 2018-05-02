@@ -19,7 +19,7 @@
             "type": "emit",
             "message": "callMethod",
             "data": {
-              "endpoint": "miscellanea/es9018k2m_ctl",
+              "endpoint": "miscellanea/es9018k2m_control",
               "method": "execDeviceCheckControl",
               "data": ""
             }
@@ -37,7 +37,7 @@
               "message": "TRANSLATE.UI.CONFIRM_RESET_MESSAGE"
             },
             "data": {
-              "endpoint": "miscellanea/es9018k2m_ctl",
+              "endpoint": "miscellanea/es9018k2m_control",
               "method": "execResetDeviceControl",
               "data": ""
             }
@@ -52,7 +52,7 @@
       "icon": "fa-cogs",
       "onSave": {
         "type": "controller",
-        "endpoint":"miscellanea/es9018k2m_ctl",
+        "endpoint":"miscellanea/es9018k2m_control",
         "method":"execVolumeControl"
       },
       "saveButton": {
@@ -96,7 +96,7 @@
       "icon": "fa-cogs",
       "onSave": {
         "type": "controller",
-        "endpoint":"miscellanea/es9018k2m_ctl",
+        "endpoint":"miscellanea/es9018k2m_control",
         "method":"execBalanceControl"
       },
       "saveButton": {

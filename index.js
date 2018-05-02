@@ -797,38 +797,6 @@ ControllerES9018K2M.prototype.parseSampleRate = function() {
   return defer.promise;
 };
 
-ControllerES9018K2M.prototype.execThdControl = function(data) {
-  var self = this;
-
-  if (!self.es9018k2m) {
-    self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('NOT_FOUND_DEVICE'));
-    return;
-  }
-  var thdControl = data['thd_onOff'];
-  if (thdControl) {
-    var thdValues = data['thd_adjust'];
-    var reg22Lsb = thdValues[0];
-    var reg23Msb = thdValues[1];
-    var reg24Lsb = thdValues[2];
-    var reg25Msb = thdValues[3];
-
-    self.writeRegister(22, reg22Lsb);
-    self.writeRegister(23, reg23Msb);
-    self.writeRegister(24, reg24Lsb);
-    self.writeRegister(25, reg25Msb);
-    self.writeRegister(13, 0x00); // enable THD compensation
-
-    self.enableTHD = true;
-    self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('THD_COMPENSATION_ON'));
-  }
-  else {
-    self.writeRegister(13, 0x40); // disable THD compensation
-    self.enableTHD = false;
-
-    self.commandRouter.pushToastMessage('info', self.serviceName, self.getI18nString('THD_COMPENSATION_OFF'));
-  }
-};
-
 // es9018km i2c Control Methods ---------------------------------------------
 ControllerES9018K2M.prototype.bitset = function(reg, value) {
   return reg |= (1 << value);

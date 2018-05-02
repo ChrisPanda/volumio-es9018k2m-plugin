@@ -1,7 +1,7 @@
 {
-  "name": "es9018k2m_control",
+  "name": "ES9018K2M_Control",
   "version": "0.1.0",
-  "description": "i2c es9018k2m function control Plugin for Volumio2",
+  "description": "i2c ES9018K2M function control Plugin for Volumio2",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,7 +10,7 @@
   "author": "Chris Song",
   "license": "ISC",
   "volumio_info": {
-    "prettyName": "es9018k2m control",
+    "prettyName": "ES9018K2M Control",
     "icon": "fa-cogs",
     "plugin_type": "miscellanea"
   },
